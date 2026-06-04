@@ -37,6 +37,20 @@ The evaluation uses 6 blocks (A-F) with a global score of 1-5:
 | Red flags | Blockers, warnings (negative adjustments) |
 | **Global** | Weighted average of above |
 
+### Scoring Weights
+
+**Default weights** (used when `scoring_weights` is absent from `config/profile.yml`):
+
+| Dimension key | Default weight | Maps to |
+|--------------|----------------|---------|
+| `cv_match` | 0.30 | Match con CV |
+| `north_star_fit` | 0.25 | North Star alignment |
+| `compensation` | 0.20 | Comp |
+| `cultural_signals` | 0.15 | Cultural signals |
+| `red_flags` | 0.10 | Red flags (negative) |
+
+**Custom weights**: If `config/profile.yml` contains a `scoring_weights` section, read those values and use them instead of the defaults above. Weights must sum to 1.0. Specialization-specific dimensions (e.g. `security_tooling_match`, `remote_friendly`) are evaluated as named criteria in the global score alongside the standard dimensions — describe what each custom key measures in `modes/_profile.md` so the evaluation system knows how to score it.
+
 **Score interpretation:**
 - 4.5+ → Strong match, recommend applying immediately
 - 4.0-4.4 → Good match, worth applying

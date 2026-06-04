@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>career-ops</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo">⚡ career-ops</span>
+        <div class="search-wrap">
+          <input id="search" type="text" placeholder="Поиск по компании, роли, архетипу…" autocomplete="off">
+          <kbd>/ </kbd>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button id="btn-cv" class="btn btn-ghost">
+          <span class="btn-icon">📄</span> Резюме
+        </button>
+        <button id="btn-add-vacancy" class="btn btn-ghost">➕ Добавить</button>
+        <button id="btn-scan" class="btn btn-primary">
+          <span class="btn-icon">🔍</span> Найти вакансии
+          <span id="queue-badge" class="queue-badge hidden">0</span>
+        </button>
+        <button id="btn-eval-all" class="btn btn-ghost hidden" title="Оценить все вакансии в очереди с ИИ">
+          ⚡ Оценить все <span id="eval-all-badge" class="queue-badge">0</span>
+        </button>
+        <button id="btn-export-csv" class="btn btn-ghost" title="Экспорт в CSV">📊 CSV</button>
+        <button id="btn-settings" class="btn btn-ghost">⚙ Настройки</button>
+      </div>
+    </header>
+
+    <!-- LLM warning banner (shown when AI not configured) -->
+    <div id="llm-warning-banner" class="llm-warning-banner hidden">
+      <span class="llm-warning-icon">⚠️</span>
+      <span id="llm-warning-text" class="llm-warning-text">ИИ не настроен — оценка вакансий недоступна.</span>
+      <button class="btn btn-ghost btn-sm" id="btn-open-llm-settings">Настроить →</button>
+      <button class="llm-warning-dismiss" id="btn-dismiss-llm-banner">✕</button>
+    </div>
+
+    <!-- Stats bar -->
+    <div id="stats-bar" class="stats-bar">
+      <div class="stat-card" data-filter="">
+        <span class="stat-num" id="s-total">—</span>
+        <span class="stat-label">Всего</span>
+      </div>
+      <div class="stat-card" data-filter="pending">
+        <span class="stat-num" id="s-pending">—</span>
+        <span class="stat-label">Не оценено</span>
+      </div>
+      <div class="stat-card" data-filter="evaluated">
+        <span class="stat-num" id="s-evaluated">—</span>
+        <span class="stat-label">Оценено</span>
+      </div>
+      <div class="stat-card highlight" data-filter="">
+        <span class="stat-num green" id="s-priority">—</span>
+        <span class="stat-label">Приоритет ≥4.0</span>
+      </div>
+      <div class="stat-card" data-filter="applied">
+        <span class="stat-num blue" id="s-applied">—</span>
+        <span class="stat-label">Откликнулся</span>
+      </div>
+      <div class="stat-card" data-filter="interview">
+        <span class="stat-num purple" id="s-interview">—</span>
+        <span class="stat-label">Собеседование</span>
+      </div>
+    </div>
+
+    <!-- Main layout -->
+    <div class="layout">
+
+      <!-- Sidebar filters -->
+      <aside class="sidebar">
+        <div class="filter-group">
+          <div class="filter-label">Статус</div>
+          <label class="filter-opt active" data-type="status" data-val="all">
+            <span class="check"></span> Все
+          </label>
+          <label class="filter-opt" data-type="status" data-val="pending">
+            <span class="check"></span> Не оценено
+          </label>
+          <label class="filter-opt" data-type="status" data-val="evaluated">
+            <span class="check"></span> Оценено
+          </label>
+          <label class="filter-opt" data-type="status" data-val="applied">
+            <span class="check"></span> Откликнулся
+          </label>
+          <label class="filter-opt" data-type="status" data-val="interview">
+            <span class="check"></span> Собеседование
+          </label>
+          <label class="filter-opt" data-type="status" data-val="skip">
+            <span class="check"></span> Пропустить
+          </label>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Оценка</div>
+          <label class="filter-opt" data-type="score" data-val="4.5">
+            <span class="dot green"></span> ≥ 4.5 — Топ
+          </label>
+          <label class="filter-opt" data-type="score" data-val="4.0">
+            <span class="dot blue"></span> ≥ 4.0 — Хорошо
+          </label>
+          <label class="filter-opt" data-type="score" data-val="3.5">
+            <span class="dot orange"></span> ≥ 3.5 — Норм
+          </label>
+          <label class="filter-opt active" data-type="score" data-val="0">
+            <span class="check"></span> Все
+          </label>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Источник</div>
+          <label class="filter-opt active" data-type="source" data-val="all">
+            <span class="check"></span> Все
+          </label>
+          <label class="filter-opt" data-type="source" data-val="hh">
+            <span class="dot"></span> hh.ru
+          </label>
+          <label class="filter-opt" data-type="source" data-val="habr">
+            <span class="dot"></span> Habr Карьера
+          </label>
+          <label class="filter-opt" data-type="source" data-val="getmatch">
+            <span class="dot"></span> GetMatch
+          </label>
+          <label class="filter-opt" data-type="source" data-val="telegram">
+            <span class="dot"></span> Telegram
+          </label>
+        </div>
+      </aside>
+
+      <!-- Vacancies table -->
+      <main class="main-content">
+        <div id="table-header" class="table-header">
+          <span class="th th-score" data-sort="score">Оценка ↕</span>
+          <span class="th th-company" data-sort="company">Компания ↕</span>
+          <span class="th th-role">Роль</span>
+          <span class="th th-status">Статус</span>
+          <span class="th th-date" data-sort="date">Дата ↕</span>
+          <span class="th th-actions"></span>
+        </div>
+
+        <div id="vacancies-list" class="vacancies-list">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Загрузка вакансий…</p>
+          </div>
+        </div>
+      </main>
+
+      <!-- Detail panel -->
+      <aside id="detail-panel" class="detail-panel">
+        <div id="detail-content" class="detail-content">
+          <div class="detail-empty">
+            <span>👈</span>
+            <p>Выбери вакансию</p>
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- /.layout -->
+
+  </div><!-- /#app -->
+
+  <!-- Scan modal -->
+  <div id="modal-scan" class="modal hidden">
+    <div class="modal-box modal-box-lg scan-modal-box">
+      <div class="modal-header">
+        <h3>🔍 Найти вакансии</h3>
+        <button class="modal-close" data-modal="scan">✕</button>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="modal-body scan-modal-body">
+
+        <!-- Sources -->
+        <div class="scan-section">
+          <div class="scan-section-header">
+            <span class="scan-section-title">Источники</span>
+          </div>
+          <div class="scan-sources-row">
+            <label class="source-check-label">
+              <input type="checkbox" id="scan-src-hh" checked>
+              <span class="source-check-badge source-hh">hh.ru</span>
+            </label>
+            <label class="source-check-label">
+              <input type="checkbox" id="scan-src-habr">
+              <span class="source-check-badge source-habr">Habr Карьера</span>
+            </label>
+            <label class="source-check-label">
+              <input type="checkbox" id="scan-src-getmatch">
+              <span class="source-check-badge source-getmatch">GetMatch</span>
+            </label>
+            <label class="source-check-label">
+              <input type="checkbox" id="scan-src-telegram">
+              <span class="source-check-badge source-telegram">Telegram</span>
+            </label>
+          </div>
+          <div style="margin-top:4px">
+            <button id="btn-open-telegram-settings" class="btn btn-ghost btn-sm"
+              style="font-size:11px;padding:2px 8px;color:var(--text-2)">
+              📡 Настроить Telegram-каналы →
+            </button>
+          </div>
+        </div>
+
+        <!-- Role input with AI suggest -->
+        <div class="scan-section">
+          <div class="scan-section-header">
+            <span class="scan-section-title">Кого ищешь?</span>
+            <span class="hint">ИИ подберёт поисковые запросы автоматически</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input id="suggest-role-input" type="text"
+              placeholder="Например: DevSecOps, Backend Python, Data Engineer…"
+              style="flex:1">
+            <button id="btn-suggest-keywords" class="btn btn-ghost">✨ Подобрать</button>
+          </div>
+          <div id="suggest-results" class="suggest-results hidden"></div>
+        </div>
+
+        <!-- Selected keywords -->
+        <div class="scan-section" id="scan-kw-section">
+          <div class="scan-section-header">
+            <span class="scan-section-title">Поисковые запросы
+              <span class="hint" style="font-weight:400">(каждый тег — отдельный запрос)</span>
+            </span>
+            <button class="btn btn-ghost btn-sm" id="btn-clear-kw" style="font-size:11px">✕ Очистить</button>
+          </div>
+          <div class="tag-input-wrap" id="positive-tags-wrap">
+            <div class="tags-list" id="positive-tags"></div>
+            <input id="positive-tag-input" class="tag-input" type="text"
+              placeholder="Добавить вручную… (Enter)">
+          </div>
+        </div>
+
+        <!-- Stop-words (collapsed) -->
+        <div class="scan-section">
+          <button class="scan-advanced-toggle" id="btn-scan-negkw" type="button">
+            ▸ Стоп-слова <span class="hint" id="negkw-count"></span>
+          </button>
+          <div id="scan-negkw-block" style="display:none;margin-top:8px">
+            <div class="tag-input-wrap" id="negative-tags-wrap">
+              <div class="tags-list" id="negative-tags"></div>
+              <input id="negative-tag-input" class="tag-input" type="text"
+                placeholder="Слова для исключения… (Enter)">
+            </div>
+          </div>
+        </div>
+
+        <!-- Region + format -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <label>
+            <span class="scan-section-title" style="display:block;margin-bottom:4px">Регион</span>
+            <select id="scan-area">
+              <option value="88">Вся Россия</option>
+              <option value="1,2" selected>Москва + СПб</option>
+              <option value="1">Только Москва</option>
+              <option value="2">Только СПб</option>
+              <option value="1,2,24">МСК + СПб + Волгоград</option>
+              <option value="24">Только Волгоград</option>
+            </select>
+          </label>
+          <label>
+            <span class="scan-section-title" style="display:block;margin-bottom:4px">Формат работы</span>
+            <select id="scan-schedule">
+              <option value="">Любой формат</option>
+              <option value="remote">Только удалённо</option>
+              <option value="fullDay">Только офис</option>
+              <option value="flexible">Гибкий график</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Advanced toggle -->
+        <button class="scan-advanced-toggle" id="btn-scan-advanced" type="button">
+          ▸ Дополнительно
+        </button>
+
+        <!-- Advanced params -->
+        <div id="scan-advanced-block" style="display:none;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <label>
+              <span class="scan-section-title" style="display:block;margin-bottom:4px">Период hh.ru (дней)</span>
+              <input id="scan-period" type="number" value="7" min="1" max="30">
+            </label>
+            <label>
+              <span class="scan-section-title" style="display:block;margin-bottom:4px">Страниц hh.ru</span>
+              <input id="scan-pages" type="number" value="4" min="1" max="10">
+            </label>
+            <label>
+              <span class="scan-section-title" style="display:block;margin-bottom:4px">Страниц Habr Карьера</span>
+              <input id="scan-habr-pages" type="number" value="2" min="1" max="10">
+            </label>
+            <label>
+              <span class="scan-section-title" style="display:block;margin-bottom:4px">Страниц GetMatch</span>
+              <input id="scan-getmatch-pages" type="number" value="2" min="1" max="10">
+            </label>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label class="checkbox-label" style="gap:8px">
+              <input id="scan-dryrun" type="checkbox">
+              <span>Пробный прогон <span class="hint">(не сохранять результаты)</span></span>
+            </label>
+            <label class="checkbox-label" id="scan-save-wrap" style="gap:8px">
+              <input id="scan-save-default" type="checkbox" checked>
+              <span>Сохранить как настройки по умолчанию</span>
+            </label>
+          </div>
+        </div>
+
+      </div><!-- /.modal-body -->
+
+      <!-- Progress area (shown during scan) -->
+      <div id="scan-progress" class="scan-progress-area hidden">
+        <div class="eval-status">
+          <span id="scan-phase-icon">🔍</span>
+          <span id="scan-phase-text" style="flex:1">Поиск…</span>
+          <span id="scan-elapsed" class="eval-elapsed"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-scan-log-toggle" style="font-size:11px;margin-top:4px">
+          ▸ Подробный вывод
+        </button>
+      </div>
+      <pre id="scan-output" class="terminal-output hidden"></pre>
+
+      <!-- Footer always visible at bottom -->
+      <div class="modal-footer">
+        <button id="btn-scan-run" class="btn btn-primary">▶ Запустить поиск</button>
+        <button class="btn btn-ghost" data-modal="scan">Отмена</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Evaluate modal -->
+  <div id="modal-evaluate" class="modal hidden">
+    <div class="modal-box modal-box-lg">
+      <div class="modal-header">
+        <h3 id="eval-modal-title">Оценить вакансию</h3>
+        <button class="modal-close" data-modal="evaluate">✕</button>
+      </div>
+
+      <!-- Phase 1: input -->
+      <div class="modal-body" id="eval-input-area">
+        <p class="hint" id="eval-modal-hint">Вставь полный текст вакансии. ИИ поставит оценку и напишет отчёт.</p>
+        <textarea id="eval-text" rows="10" placeholder="Вставь текст вакансии…"></textarea>
+      </div>
+
+      <!-- Phase 2: progress (shown while running) -->
+      <div class="eval-progress-area hidden" id="eval-progress-area">
+        <div class="eval-status">
+          <span class="eval-phase-icon" id="eval-phase-icon">⚡</span>
+          <span class="eval-phase-text" id="eval-phase-text">Подготовка…</span>
+          <span class="eval-elapsed" id="eval-elapsed"></span>
+        </div>
+        <div class="eval-track"><div class="eval-fill" id="eval-fill"></div></div>
+      </div>
+
+      <pre id="eval-output" class="terminal-output eval-terminal hidden"></pre>
+
+      <div class="modal-footer" id="eval-footer">
+        <button id="btn-eval-run" class="btn btn-primary">⚡ Оценить</button>
+        <button class="btn btn-ghost" data-modal="evaluate" id="btn-eval-cancel">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CV Modal -->
+  <div id="modal-cv" class="modal hidden">
+    <div class="modal-box modal-box-xl">
+      <div class="modal-header">
+        <h3>Моё резюме</h3>
+        <div class="modal-tab-bar">
+          <button class="modal-nav active" data-cv-tab="view">Просмотр</button>
+          <button class="modal-nav" data-cv-tab="edit">Редактировать</button>
+          <button class="modal-nav" data-cv-tab="upload">Загрузить файл</button>
+        </div>
+        <button class="modal-close" data-modal="cv">✕</button>
+      </div>
+
+      <!-- Tab: view -->
+      <div class="cv-tab-pane" id="cv-tab-view">
+        <div id="cv-preview" class="cv-preview">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Tab: edit -->
+      <div class="cv-tab-pane hidden" id="cv-tab-edit">
+        <div class="modal-body" style="padding-bottom:0">
+          <textarea id="cv-edit-text" rows="22" placeholder="# Иван Иванов&#10;&#10;## Опыт&#10;..."></textarea>
+        </div>
+        <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
+          <button id="btn-cv-save" class="btn btn-primary">💾 Сохранить cv.md</button>
+          <span id="cv-save-status" class="hint"></span>
+          <div id="cv-reoptimize-hint" class="reoptimize-hint hidden">
+            <span class="hint">CV обновлено —</span>
+            <button class="btn btn-ghost btn-sm" id="btn-reoptimize">♻️ Пересчитать под топ-вакансию</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: upload -->
+      <div class="cv-tab-pane hidden" id="cv-tab-upload">
+        <div class="modal-body">
+          <div class="drop-zone" id="cv-drop-zone">
+            <div class="drop-zone-icon">📎</div>
+            <p>Перетащи резюме сюда</p>
+            <p class="hint">PDF, DOCX или TXT · до 8 МБ</p>
+            <input type="file" id="cv-file-input" accept=".pdf,.docx,.doc,.txt,.md" hidden>
+            <button class="btn btn-ghost" id="btn-cv-pick">Выбрать файл</button>
+          </div>
+          <div id="cv-upload-result" class="hidden">
+            <div class="upload-result-header">
+              <span id="cv-upload-filename" class="hint"></span>
+              <span class="hint"> — текст извлечён, проверь и сохрани</span>
+            </div>
+            <textarea id="cv-upload-text" rows="16" placeholder="Извлечённый текст…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" id="cv-upload-footer" style="display:none">
+          <button id="btn-cv-upload-save" class="btn btn-primary">💾 Сохранить как cv.md</button>
+          <span class="hint">Старое резюме будет сохранено в cv.backup.md</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Optimize Modal -->
+  <div id="modal-optimize" class="modal hidden">
+    <div class="modal-box modal-box-xl">
+      <div class="modal-header">
+        <h3 id="optimize-title">Оптимизировать резюме</h3>
+        <button class="modal-close" data-modal="optimize">✕</button>
+      </div>
+
+      <div id="optimize-input-area">
+        <div class="modal-body">
+          <div class="optimize-cv-row">
+            <label class="optimize-cv-label">Резюме</label>
+            <select id="optimize-cv-select" class="optimize-cv-select">
+              <option value="cv.md">cv.md</option>
+            </select>
+          </div>
+          <label>Текст вакансии
+            <div id="optimize-jd-hint" class="hidden" style="font-size:12px;color:var(--text-2);margin-bottom:4px"></div>
+            <textarea id="optimize-jd" rows="10"
+              placeholder="Вставь полный текст вакансии с hh.ru…"></textarea>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-optimize-run" class="btn btn-primary">⚡ Оптимизировать</button>
+          <button class="btn btn-ghost" data-modal="optimize">Отмена</button>
+        </div>
+      </div>
+
+      <!-- Progress (visible while streaming) -->
+      <div id="optimize-running" class="hidden">
+        <div class="eval-progress-area running" style="border-bottom:none">
+          <div class="eval-status">
+            <span class="eval-phase-icon">⚡</span>
+            <span class="eval-phase-text" id="opt-phase-text">Генерирую оптимизированное резюме…</span>
+            <span class="eval-elapsed" id="opt-elapsed">0s</span>
+          </div>
+          <div class="eval-track"><div class="eval-fill" id="opt-fill"></div></div>
+        </div>
+        <pre id="optimize-output" class="terminal-output opt-stream-terminal"></pre>
+      </div>
+
+      <!-- Result: side-by-side compare -->
+      <div id="optimize-result" class="hidden">
+        <div class="compare-header">
+          <div class="compare-col-title">Оригинал</div>
+          <div class="compare-col-title" style="color:var(--green)">Оптимизировано ✨</div>
+        </div>
+        <div class="compare-panes">
+          <pre id="compare-original" class="compare-pane"></pre>
+          <pre id="compare-optimized" class="compare-pane"></pre>
+        </div>
+        <div class="opt-result-footer">
+          <button id="btn-optimize-apply" class="btn btn-primary">💾 Применить</button>
+          <button id="btn-optimize-copy" class="btn btn-ghost">📋 Скопировать</button>
+          <button class="btn btn-ghost" data-modal="optimize">Закрыть</button>
+          <span id="optimize-apply-status" class="hint"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add vacancy modal -->
+  <div id="modal-add" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ Добавить вакансию</h3>
+        <button class="modal-close" data-modal="add">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
+        <p class="hint" style="margin:0">Вставь ссылку hh.ru — вакансия добавится в очередь. Или вставь текст — откроется окно оценки.</p>
+        <textarea id="add-input" class="eval-textarea" rows="4"
+          placeholder="https://hh.ru/vacancy/12345678&#10;&#10;или вставь полный текст вакансии"></textarea>
+        <div id="add-preview" class="add-preview hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-add-run">Добавить</button>
+        <button class="btn btn-ghost" data-modal="add">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal (LLM + Data management) -->
+  <div id="modal-settings" class="modal hidden">
+    <div class="modal-box modal-box-lg">
+      <div class="modal-header">
+        <h3>⚙ Настройки</h3>
+        <div class="modal-tab-bar">
+          <button class="modal-nav active" data-settings-tab="llm">🤖 Языковая модель</button>
+          <button class="modal-nav" data-settings-tab="telegram">📡 Telegram</button>
+          <button class="modal-nav" data-settings-tab="data">🗂 Данные</button>
+        </div>
+        <button class="modal-close" data-modal="settings">✕</button>
+      </div>
+
+      <!-- Tab: LLM settings -->
+      <div class="settings-tab-pane" id="settings-tab-llm">
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:20px">
+
+          <div class="manage-section">
+            <div class="manage-section-title">Провайдер</div>
+            <p class="hint" style="margin:4px 0 10px">Выбери сервис, который будет обрабатывать запросы (оценка, CV, интервью)</p>
+            <div class="provider-tabs" id="llm-provider-tabs">
+              <button class="provider-tab active" data-provider="ollama">Ollama</button>
+              <button class="provider-tab" data-provider="openai">OpenAI</button>
+              <button class="provider-tab" data-provider="anthropic">Anthropic</button>
+              <button class="provider-tab" data-provider="openrouter">OpenRouter</button>
+              <button class="provider-tab" data-provider="custom">Свой URL</button>
+            </div>
+          </div>
+
+          <div class="manage-section" id="llm-row-ollama-host">
+            <div class="manage-section-title">Адрес Ollama</div>
+            <input id="llm-ollama-host" type="text" class="settings-input" placeholder="http://localhost:11434" value="http://localhost:11434">
+            <p class="hint" style="margin-top:6px">Ollama должен быть запущен локально. <a href="https://ollama.ai" target="_blank" style="color:var(--amber)">Скачать</a></p>
+          </div>
+
+          <div class="manage-section hidden" id="llm-row-api-key">
+            <div class="manage-section-title">API ключ</div>
+            <input id="llm-api-key" type="password" class="settings-input" placeholder="sk-... или ваш ключ" autocomplete="off">
+          </div>
+
+          <div class="manage-section hidden" id="llm-row-base-url">
+            <div class="manage-section-title">Base URL <span class="hint">(только для Свой URL)</span></div>
+            <input id="llm-base-url" type="text" class="settings-input" placeholder="https://api.example.com/v1">
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-title">Модель</div>
+            <input id="llm-model" type="text" class="settings-input" placeholder="qwen3:14b" style="margin-bottom:8px">
+            <div class="model-chips" id="llm-model-chips"></div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="btn btn-ghost" id="btn-llm-test">⚡ Проверить подключение</button>
+            <span id="llm-test-result" class="hint"></span>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="btn-llm-save">Сохранить настройки</button>
+          <button class="btn btn-ghost" data-modal="settings">Отмена</button>
+        </div>
+      </div>
+
+      <!-- Tab: Telegram channels -->
+      <div class="settings-tab-pane hidden" id="settings-tab-telegram">
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:20px">
+
+          <div class="manage-section">
+            <div class="manage-section-title">📡 Telegram-каналы для сканирования</div>
+            <p class="hint" style="margin:4px 0 12px;line-height:1.6">
+              Добавляй публичные каналы с вакансиями. Сканер читает последние ~20 постов через веб-превью.<br>
+              <strong>Требование:</strong> канал должен быть публичным и иметь веб-превью — открой
+              <code style="font-size:11px">t.me/s/HANDLE</code> в браузере, там должны быть видны посты.
+            </p>
+
+            <div id="tg-settings-list" class="telegram-ch-list" style="max-height:280px"></div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+              <input id="tg-add-handle" type="text"
+                placeholder="@handle или handle (без @)…"
+                style="flex:2;min-width:140px">
+              <input id="tg-add-notes" type="text"
+                placeholder="Заметка (необязательно)"
+                style="flex:3;min-width:160px">
+              <button id="btn-tg-add" class="btn btn-primary btn-sm">+ Добавить канал</button>
+            </div>
+            <span id="tg-add-status" class="hint" style="margin-top:6px;display:block"></span>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-title hint" style="font-size:11px;font-weight:400">
+              💡 Каналы хранятся в <code>portals.yml</code> — можешь редактировать файл напрямую.
+              Формат: <code>telegram_channels.channels[].handle</code>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tab: Data management -->
+      <div class="settings-tab-pane hidden" id="settings-tab-data">
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:20px">
+
+          <div class="manage-section">
+            <div class="manage-section-title">🗑 Очередь (pipeline.md)</div>
+            <p class="hint" style="margin:4px 0 10px">Помечает все ожидающие ссылки как обработанные [x] — не удаляет данные</p>
+            <button class="btn btn-ghost" id="btn-clear-pipeline">Очистить очередь</button>
+            <span id="clear-pipeline-status" class="hint" style="margin-left:8px"></span>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-title">📦 Трекер (applications.md)</div>
+            <p class="hint" style="margin:4px 0 10px">Переводит вакансии в статус «Discarded» — данные остаются в файле</p>
+            <div class="manage-checkboxes" id="archive-status-checks">
+              <label><input type="checkbox" value="evaluated" checked> Оценено</label>
+              <label><input type="checkbox" value="skip" checked> Пропустить</label>
+              <label><input type="checkbox" value="applied"> Откликнулся</label>
+              <label><input type="checkbox" value="responded"> Ответили</label>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+              <button class="btn btn-ghost" id="btn-archive-tracker">Архивировать выбранные</button>
+              <span id="archive-tracker-status" class="hint"></span>
+            </div>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-title">🗑 Удалить проанализированные</div>
+            <p class="hint" style="margin:4px 0 10px">Полностью удаляет строки из трекера — используй для очистки после просмотра</p>
+            <div class="manage-checkboxes" id="delete-status-checks">
+              <label><input type="checkbox" value="evaluated" checked> Оценено</label>
+              <label><input type="checkbox" value="skip" checked> Пропустить</label>
+              <label><input type="checkbox" value="discarded" checked> Архив</label>
+              <label><input type="checkbox" value="rejected"> Отказ</label>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+              <button class="btn btn-ghost" id="btn-delete-tracker" style="color:var(--red);border-color:rgba(248,113,113,.3)">🗑 Удалить выбранные</button>
+              <span id="delete-tracker-status" class="hint"></span>
+            </div>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-title">🔍 Сброс дедупликации</div>
+            <p class="hint" style="margin:4px 0 10px">Очищает <code>scan-history.tsv</code> и <code>pipeline.md</code> — при следующем сканировании hh.ru найдёт все вакансии заново</p>
+            <button class="btn btn-ghost" id="btn-clear-scan-history" style="color:var(--red);border-color:rgba(248,113,113,.3)">🗑 Сбросить историю и очередь</button>
+            <span id="clear-scan-history-status" class="hint" style="margin-left:8px"></span>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-title">📄 Отчёты об оценке (reports/)</div>
+            <p class="hint" style="margin:4px 0 10px">Удаляет файлы отчётов с диска — строки трекера остаются</p>
+            <div class="manage-checkboxes" id="delete-reports-checks">
+              <label><input type="checkbox" value="evaluated" checked> Только оценённые</label>
+              <label><input type="checkbox" value="all"> Все отчёты</label>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+              <button class="btn btn-ghost" id="btn-delete-reports" style="color:var(--red);border-color:rgba(248,113,113,.3)">🗑 Удалить отчёты</button>
+              <span id="delete-reports-status" class="hint"></span>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-modal="settings">Закрыть</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Interview prep modal -->
+  <div id="modal-interview" class="modal hidden">
+    <div class="modal-box modal-box-xl">
+      <div class="modal-header">
+        <h3 id="interview-modal-title">🎤 Подготовка к интервью</h3>
+        <div class="modal-tab-bar">
+          <button class="modal-nav active" data-interview-tab="report">Отчёт</button>
+          <button class="modal-nav" data-interview-tab="storybank">Story Bank</button>
+        </div>
+        <button class="modal-close" data-modal="interview">✕</button>
+      </div>
+
+      <!-- Tab: report -->
+      <div class="interview-tab-pane" id="interview-tab-report">
+        <!-- normal: loading / report / no-report -->
+        <div id="interview-report-body" class="interview-report-body">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+        <!-- generating: progress + stream -->
+        <div id="interview-generating" class="hidden">
+          <div class="eval-progress-area running" style="border-bottom:none">
+            <div class="eval-status">
+              <span class="eval-phase-icon">⚡</span>
+              <span class="eval-phase-text" id="interview-phase-text">Готовлюсь…</span>
+              <span class="eval-elapsed" id="interview-elapsed">0s</span>
+            </div>
+            <div class="eval-track"><div class="eval-fill" id="interview-fill"></div></div>
+          </div>
+          <pre id="interview-stream" class="terminal-output opt-stream-terminal"></pre>
+        </div>
+      </div>
+
+      <!-- Tab: story bank -->
+      <div class="interview-tab-pane hidden" id="interview-tab-storybank">
+        <div id="interview-storybank-body" class="interview-report-body">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div class="modal-footer" id="interview-footer">
+        <span id="interview-model-badge" class="hint" style="font-size:11px"></span>
+        <button id="btn-interview-copy-cmd" class="btn btn-ghost hidden">📋 Команда</button>
+        <button class="btn btn-ghost" data-modal="interview">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch evaluation modal -->
+  <div id="modal-batch-eval" class="modal hidden">
+    <div class="modal-box modal-box-lg">
+      <div class="modal-header">
+        <h3>⚡ Оценить все вакансии в очереди</h3>
+        <button class="modal-close" data-modal="batch-eval">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0">
+        <!-- Progress bar (shown while running) -->
+        <div id="batch-progress-wrap" class="batch-progress-wrap hidden">
+          <div class="batch-progress-bar">
+            <div class="batch-progress-fill" id="batch-progress-fill"></div>
+          </div>
+          <div class="batch-progress-label" id="batch-progress-label">Подготовка…</div>
+        </div>
+        <!-- Vacancy list -->
+        <div id="batch-eval-list" class="batch-eval-list"></div>
+      </div>
+      <div id="batch-eval-footer" class="modal-footer">
+        <button id="btn-batch-eval-run" class="btn btn-primary">⚡ Начать оценку</button>
+        <button class="btn btn-ghost" data-modal="batch-eval" id="btn-batch-eval-cancel">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

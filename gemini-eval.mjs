@@ -334,6 +334,8 @@ if (saveReport) {
 ---
 
 ${evaluationText.replace(/---SCORE_SUMMARY---[\s\S]*?---END_SUMMARY---/, '').trim()}
+
+${summaryMatch ? summaryMatch[0] : ''}
 `;
 
     writeFileSync(reportPath, reportContent, 'utf-8');

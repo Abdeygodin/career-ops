@@ -66,6 +66,32 @@ location:
   # For remote roles outside your country:
   # onsite_availability: "1 week/month in any city"
 
+# Scoring weights for the global score calculation.
+# Read by ollama-eval.mjs and the AI evaluation system.
+# All active weights must sum to 1.0.
+# Uncomment and customize for your specialization.
+# See config/profile.devsecops.ru.yml for a ready-to-use DevSecOps example.
+#
+# Standard dimensions (used when this section is commented out):
+#   cv_match: 0.30        — skills and experience alignment
+#   north_star_fit: 0.25  — match with your target archetypes
+#   compensation: 0.20    — salary vs. market
+#   cultural_signals: 0.15 — remote policy, culture, growth signals
+#   red_flags: 0.10       — blockers and warnings (negative adjustment)
+#
+# Custom specialization dimensions (define any extra key; describe it to the AI):
+#   security_tooling_match: 0.20  — DevSecOps tooling coverage
+#   remote_friendly: 0.15         — remote-first signals
+#   relocation_support: 0.10      — relocation package / visa support
+#   brand_recognition: 0.05       — employer brand in your market
+#
+# scoring_weights:
+#   cv_match: 0.30
+#   north_star_fit: 0.25
+#   compensation: 0.20
+#   cultural_signals: 0.15
+#   red_flags: 0.10
+
 cv:
   output_format: "html" # "html" (default) or "latex"
   # (Optional) Canva resume design ID for visual CV generation via /career-ops pdf.

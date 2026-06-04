@@ -9,6 +9,11 @@ import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+try {
+  const { config } = await import('dotenv');
+  config();
+} catch { /* dotenv optional */ }
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = __dirname;
 
@@ -132,6 +137,40 @@ function checkFonts() {
   return { pass: true, label: 'Fonts directory ready' };
 }
 
+async function checkOllama() {
+  const _raw = process.env.OLLAMA_HOST || 'http://localhost:11434';
+  const host = (_raw.startsWith('http://') || _raw.startsWith('https://'))
+    ? _raw.replace(/\/$/, '')
+    : `http://${_raw.replace(/\/$/, '')}`;
+  try {
+    const res = await fetch(`${host}/api/tags`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const models = (data.models || []).map(m => m.name);
+    if (models.length === 0) {
+      return {
+        pass: true,
+        label: `Ollama running at ${host} (no models yet — run: ollama pull qwen3:14b)`,
+      };
+    }
+    const preview = models.slice(0, 3).join(', ') + (models.length > 3 ? ` +${models.length - 3} more` : '');
+    return { pass: true, label: `Ollama running at ${host} — models: ${preview}` };
+  } catch {
+    return {
+      pass: false,
+      label: `Ollama not reachable at ${host}`,
+      fix: [
+        'Start Ollama: ollama serve',
+        'Pull a model: ollama pull qwen3:14b',
+        `Override host: set OLLAMA_HOST in .env (current: ${host})`,
+      ],
+    };
+  }
+}
+
 function checkAutoDir(name) {
   const dirPath = join(projectRoot, name);
   if (existsSync(dirPath)) {
@@ -157,6 +196,7 @@ async function main() {
     checkNodeVersion(),
     checkDependencies(),
     await checkPlaywright(),
+    await checkOllama(),
     checkCv(),
     checkProfile(),
     checkPortals(),

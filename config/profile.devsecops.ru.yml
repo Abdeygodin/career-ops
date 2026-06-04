@@ -1,0 +1,96 @@
+# DevSecOps Profile — Russian Market
+# ─────────────────────────────────────────────────────────────────
+# Ready-to-use profile for a DevSecOps / Application Security engineer
+# targeting the Russian IT market (hh.ru, Хабр Карьера, Telegram).
+#
+# HOW TO USE:
+#   cp config/profile.devsecops.ru.yml config/profile.yml
+#   Then fill in YOUR personal details in the candidate section.
+#   To switch specialization — copy a different profile.*.yml over profile.yml.
+#   No code changes needed.
+# ─────────────────────────────────────────────────────────────────
+
+candidate:
+  full_name: "Иван Иванов"
+  email: "ivan@example.com"
+  phone: "+7-900-000-0000"
+  location: "Москва / удалённо"
+  linkedin: "linkedin.com/in/ivanivanov"
+  portfolio_url: ""
+  github: "github.com/ivanivanov"
+  twitter: ""
+
+target_roles:
+  primary:
+    - "DevSecOps Engineer"
+    - "Application Security Engineer"
+    - "Platform Security Engineer"
+  archetypes:
+    - name: "DevSecOps Engineer"
+      level: "Middle/Senior"
+      fit: "primary"
+    - name: "Platform / Infrastructure Security Engineer"
+      level: "Senior"
+      fit: "primary"
+    - name: "Cloud Security Engineer"
+      level: "Senior"
+      fit: "secondary"
+    - name: "AppSec Engineer"
+      level: "Middle/Senior"
+      fit: "secondary"
+    - name: "SRE с security-уклоном"
+      level: "Senior"
+      fit: "adjacent"
+    - name: "Security Architect / Tech Lead Security"
+      level: "Lead/Principal"
+      fit: "adjacent"
+
+narrative:
+  headline: "DevSecOps / AppSec инженер — встраиваю безопасность в CI/CD и облачную инфраструктуру"
+  exit_story: ""
+  superpowers:
+    - "Интеграция SAST/DAST/SCA в CI/CD-пайплайн без замедления поставки"
+    - "Kubernetes hardening и zero-trust сети (Vault, OPA, Falco)"
+    - "Комбинация security + SRE: incident response с SLO/SLI метриками"
+  proof_points: []
+
+compensation:
+  target_range: "300 000 — 450 000 ₽ gross"
+  currency: "RUB"
+  minimum: "250 000 ₽ gross"
+  location_flexibility: "Удалённо предпочтительно; офис/гибрид — Москва или СПб"
+
+location:
+  country: "Россия"
+  city: "Москва"
+  timezone: "MSK (UTC+3)"
+  visa_status: "Гражданин РФ"
+
+language:
+  # Использовать русские режимы (modes/ru/) для оценки вакансий
+  modes_dir: modes/ru
+
+# ─────────────────────────────────────────────────────────────────
+# Scoring weights for DevSecOps specialization.
+# Sum = 1.0. Customized to weight security tooling match heavily.
+#
+# security_tooling_match — покрытие инструментами: Semgrep, Trivy,
+#   Snyk, SonarQube, Vault, ArgoCD, Falco, OPA + российский стек:
+#   PT Application Inspector, MaxPatrol, Kaspersky, BI.ZONE.
+# remote_friendly — наличие удалённого формата (критично для РФ-рынка).
+# relocation_support — релокационный пакет / поддержка переезда.
+# brand_recognition — узнаваемость работодателя в security-сообществе.
+# ─────────────────────────────────────────────────────────────────
+scoring_weights:
+  cv_match: 0.15              # соответствие навыков и опыта CV
+  north_star_fit: 0.15        # совпадение с целевыми архетипами выше
+  compensation: 0.10          # зарплата vs рынок
+  cultural_signals: 0.05      # культура, рост, стабильность
+  red_flags: 0.05             # блокеры и предупреждения (негативно)
+  security_tooling_match: 0.20  # совпадение по security-инструментарию
+  remote_friendly: 0.15       # удалённый формат работы
+  relocation_support: 0.10    # релокационный пакет
+  brand_recognition: 0.05     # репутация в security-сообществе
+
+cv:
+  output_format: "html"

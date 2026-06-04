@@ -25,10 +25,15 @@ writing-samples/*
 
 # User config and customization (never auto-updated)
 config/profile.yml
+config/llm.yml
 portals.yml
 modes/_profile.md
 .update-dismissed
 .update-lock
+
+# Personal backups and debug output
+cv.backup.md
+data/ollama-debug/
 
 # Secrets (never commit — use .env.example as template)
 .env

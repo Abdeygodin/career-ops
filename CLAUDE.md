@@ -129,7 +129,11 @@ When using the [Gemini CLI](https://github.com/google-gemini/gemini-cli), the fo
 
 If `modes/_profile.md` is missing, copy from `modes/_profile.template.md` silently. This is the user's customization file — it will never be overwritten by updates.
 
-**If ANY of these is missing, enter onboarding mode.** Do NOT proceed with evaluations, scans, or any other mode until the basics are in place. Guide the user step by step:
+**Placeholder detection (run even if all files exist):** Read `config/profile.yml` and check if `candidate.full_name` is still a placeholder value (`"Иван Иванов"`, `"Ivan Ivanov"`, `"John Doe"`, `"Your Name"`, or empty). If so, treat Step 2 as incomplete — the file exists but isn't personalized. Say:
+> "Вижу, что `profile.yml` ещё не заполнен — там шаблонное имя. Давайте исправим за минуту: как вас зовут и какой email указать в резюме?"
+Then fill in the real data and also check if `modes/_profile.md` still contains the template archetypes (AI/LLM roles) instead of the user's actual target roles.
+
+**If ANY of these is missing or contains placeholder data, enter onboarding mode.** Do NOT proceed with evaluations, scans, or any other mode until the basics are in place. Guide the user step by step:
 
 #### Step 1: CV (required)
 If `cv.md` is missing, ask:

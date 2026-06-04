@@ -1,0 +1,23 @@
+# LLM Provider Configuration
+# Copy this file to config/llm.yml and adjust as needed.
+#
+#   cp config/llm.example.yml config/llm.yml
+#
+# Supported providers: ollama, gemini
+# Most settings can also be set via .env (see .env.example).
+
+provider: ollama
+
+# Ollama (local, zero-cost)
+# Requires: https://ollama.com + ollama pull qwen3:14b
+model: qwen3:14b
+ollama_host: http://localhost:11434
+
+# Gemini (cloud, free tier available)
+# Requires: GEMINI_API_KEY in .env
+# model: gemini-2.5-flash
+# api_key: ''     # leave blank — read from GEMINI_API_KEY env var
+
+# OpenAI-compatible endpoint (optional)
+# base_url: ''
+# api_key: ''     # read from OPENAI_API_KEY env var

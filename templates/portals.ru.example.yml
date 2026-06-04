@@ -1,0 +1,316 @@
+# Конфигурация портала — Российский рынок (DevSecOps / Security)
+# ─────────────────────────────────────────────────────────────────
+# Используется scan.mjs, hh-scan.mjs, habr-scan.mjs для поиска вакансий
+# на российском IT-рынке.
+#
+# КАК ИСПОЛЬЗОВАТЬ:
+#   cp templates/portals.ru.example.yml portals.yml
+#   Затем отредактируй title_filter под свои целевые роли.
+#
+# ВАЖНО: title_filter живёт здесь (в portals.yml), а НЕ в profile.yml,
+# потому что scan.mjs читает его только отсюда. Это ограничение схемы.
+#
+# СТРУКТУРА:
+#   - title_filter        — фильтр заголовков вакансий
+#   - location_filter     — фильтр по городу/формату
+#   - telegram_channels   — Telegram-каналы с вакансиями (через RSS-прокси)
+#   - search_queries      — WebSearch-запросы к hh.ru и Хабр Карьере
+#   - tracked_companies   — конкретные страницы компаний (прямой парсинг)
+#
+# Telegram RSS-прокси (TG_RSS_PROXY в .env):
+#   Сторонний сервис tg.i-c-a.su — нестабильный, может падать.
+#   При отказе прокси — используй tg-scan (Telethon + Python) как fallback.
+#   TODO: реализовать tg-scan.mjs с Telethon-заглушкой.
+
+# ── Фильтр по местоположению ──────────────────────────────────────
+# Раскомментируй если нужно ограничить по городу или формату.
+#
+# location_filter:
+#   always_allow:
+#     - "Удалённо"
+#     - "Remote"
+#   allow:
+#     - "Удалённо"
+#     - "Remote"
+#     - "Москва"
+#     - "Санкт-Петербург"
+#   block:
+#     - "Новосибирск"
+#     - "Екатеринбург"
+
+# ── Фильтр заголовков ─────────────────────────────────────────────
+# [НАСТРОИТЬ] Замени на ключевые слова ТВОИХ целевых ролей.
+# Для DevSecOps — список ниже. Для другой специализации — замени всё.
+
+title_filter:
+  positive:
+    # -- DevSecOps --
+    - "DevSecOps"
+    - "Application Security"
+    - "AppSec"
+    - "Безопасность приложений"
+    # -- Platform / Cloud Security --
+    - "Platform Security"
+    - "Cloud Security"
+    - "Infrastructure Security"
+    - "Kubernetes Security"
+    - "K8s Security"
+    # -- Пентест / RedTeam --
+    - "Penetration Test"
+    - "Pentest"
+    - "Пентест"
+    - "Red Team"
+    - "Bug Bounty"
+    # -- Общая ИБ с техническим уклоном --
+    - "Information Security Engineer"
+    - "Security Engineer"
+    - "Инженер по безопасности"
+    - "Инженер ИБ"
+    - "Специалист по безопасности"
+    - "Security Architect"
+    - "Архитектор безопасности"
+    # -- SRE с security-уклоном --
+    - "SRE Security"
+    - "Site Reliability"
+    # -- Security Tech Lead --
+    - "Tech Lead Security"
+    - "Lead Security"
+    - "Head of Security"
+    - "Руководитель ИБ"
+  negative:
+    - "Стажёр"
+    - "Junior"
+    - "Intern"
+    - "Охранник"
+    - "Физическая охрана"
+    - "Оператор"
+    - "Compliance Manager"
+    - "GRC"
+    - "ISO 27001 менеджер"
+    - "CISO"          # руководящая позиция без хардкора — раскомментируй если ищешь
+  seniority_boost:
+    - "Senior"
+    - "Старший"
+    - "Lead"
+    - "Ведущий"
+    - "Principal"
+    - "Staff"
+    - "Head"
+    - "Руководитель"
+
+# ── Telegram-каналы с вакансиями ─────────────────────────────────
+# Эти каналы читаются через RSS-прокси (TG_RSS_PROXY в .env).
+# habr-scan.mjs или tg-scan.mjs обрабатывают эту секцию.
+# Примечание: RSS-прокси (tg.i-c-a.su) — сторонний и нестабильный.
+# При недоступности — fallback на Telethon (требует api_id/api_hash).
+
+telegram_channels:
+  enabled: true
+  poll_interval_hours: 6
+  channels:
+    - handle: devsecops_jobs
+      notes: "DevSecOps-вакансии, активный канал"
+    - handle: infosec_jobs_ru
+      notes: "ИБ-вакансии на русском рынке"
+    - handle: cybersec_vacancy
+      notes: "Кибербезопасность, широкий охват"
+    - handle: it_jobs_ru
+      notes: "Общий IT-канал, много security-вакансий"
+    - handle: devops_jobs_ru
+      notes: "DevOps/SRE — пересечение с DevSecOps"
+    - handle: python_jobs
+      notes: "Python-вакансии, часть security-инструментария"
+    - handle: golang_jobs
+      notes: "Go-вакансии — популярен в security-инфраструктуре"
+    - handle: ai_ml_jobs
+      notes: "AI/ML вакансии — для смежных ролей"
+
+# ── WebSearch-запросы ─────────────────────────────────────────────
+# Запросы к hh.ru, Хабр Карьере и другим агрегаторам.
+# scan.mjs выполняет их как WebSearch с site: фильтрами.
+
+search_queries:
+  # -- hh.ru --
+  - name: hh.ru — DevSecOps
+    query: 'site:hh.ru "DevSecOps" OR "Application Security" OR "AppSec" удалённо OR Москва OR Санкт-Петербург'
+    enabled: true
+
+  - name: hh.ru — Security Engineer
+    query: 'site:hh.ru "Инженер по безопасности" OR "Security Engineer" OR "Инженер ИБ" Middle OR Senior OR Lead'
+    enabled: true
+
+  - name: hh.ru — Platform Security
+    query: 'site:hh.ru "Platform Security" OR "Cloud Security" OR "Infrastructure Security" OR "Kubernetes Security"'
+    enabled: true
+
+  - name: hh.ru — Security Architect
+    query: 'site:hh.ru "Security Architect" OR "Архитектор безопасности" OR "Tech Lead Security"'
+    enabled: true
+
+  # -- Хабр Карьера --
+  - name: Хабр Карьера — DevSecOps
+    query: 'site:career.habr.com "DevSecOps" OR "Application Security" OR "AppSec"'
+    enabled: true
+
+  - name: Хабр Карьера — Security Engineer
+    query: 'site:career.habr.com "Security Engineer" OR "Инженер безопасности" OR "Platform Security"'
+    enabled: true
+
+  - name: Хабр Карьера — Senior Security
+    query: 'site:career.habr.com "Senior" OR "Старший" "безопасность" OR "security" OR "DevSecOps"'
+    enabled: true
+
+  # -- GetMatch --
+  - name: GetMatch — Security
+    query: 'site:getmatch.ru "DevSecOps" OR "Security Engineer" OR "AppSec" удалённо'
+    enabled: true
+
+  # -- SuperJob --
+  - name: SuperJob — Security Engineer
+    query: 'site:superjob.ru "Security Engineer" OR "DevSecOps" OR "Инженер по информационной безопасности"'
+    enabled: false   # SuperJob хуже по IT-вакансиям, включи если нужно
+
+  # -- Rabota.ru --
+  - name: Rabota.ru — ИБ-инженер
+    query: 'site:rabota.ru "DevSecOps" OR "Application Security" OR "Инженер ИБ" OR "Security Engineer"'
+    enabled: false   # включи если ищешь вне Москвы/СПб
+
+# ── Прямой парсинг компаний ───────────────────────────────────────
+# Карьерные страницы российских компаний с security-командами.
+# ПРИМЕЧАНИЕ: большинство российских компаний НЕ используют
+# Greenhouse / Lever / Ashby, поэтому scan.mjs не сможет
+# автоматически распознать провайдера.
+# Для таких компаний:
+#   - используй scan_method: websearch и scan_query
+#   - или paste URL напрямую в data/pipeline.md
+#
+# Провайдеры с поддержкой API (зелёные):
+#   JetBrains → Greenhouse (API доступен)
+
+tracked_companies:
+
+  # ── Security-специализированные компании ─────────────────────────
+
+  - name: Positive Technologies
+    careers_url: https://www.ptsecurity.com/ru-ru/about/jobs/
+    scan_method: websearch
+    scan_query: '"Positive Technologies" вакансии "DevSecOps" OR "Application Security" OR "AppSec" OR "Security Engineer"'
+    notes: "Один из крупнейших игроков рынка ИБ в России. PT Application Inspector, MaxPatrol, PT Sandbox."
+    enabled: true
+
+  - name: Kaspersky
+    careers_url: https://careers.kaspersky.com/ru
+    scan_method: websearch
+    scan_query: 'site:careers.kaspersky.com "Security" OR "DevSecOps" OR "Application Security" OR "AppSec"'
+    notes: "Мировой лидер в антивирусе/EDR. Security Research, Application Security, Infrastructure Security команды."
+    enabled: true
+
+  - name: Ростелеком-Солар
+    careers_url: https://solar.ru/vacancy/
+    scan_method: websearch
+    scan_query: '"Ростелеком-Солар" OR "Solar" вакансии "DevSecOps" OR "Security Engineer" OR "AppSec" OR "Пентест"'
+    notes: "Крупнейший MSSP в России. SOC, RedTeam, AppSec, DevSecOps."
+    enabled: true
+
+  - name: BI.ZONE
+    careers_url: https://bi.zone/careers/
+    scan_method: websearch
+    scan_query: '"BI.ZONE" вакансии "DevSecOps" OR "Security" OR "AppSec" OR "Pentest"'
+    notes: "Дочка Сбера, кибербезопасность. Сильные команды AppSec и RedTeam."
+    enabled: true
+
+  - name: F.A.C.C.T. (Group-IB RU)
+    careers_url: https://facct.ru/company/career/
+    scan_method: websearch
+    scan_query: '"F.A.C.C.T." OR "FACCT" вакансии "Security" OR "DevSecOps" OR "Application Security"'
+    notes: "Форензика, Threat Intelligence, AppSec. Бывшая Group-IB (российское юрлицо)."
+    enabled: true
+
+  # ── Крупные IT-компании с security-командами ─────────────────────
+
+  - name: Яндекс
+    careers_url: https://yandex.ru/jobs/
+    scan_method: websearch
+    scan_query: 'site:yandex.ru/jobs "DevSecOps" OR "Application Security" OR "Security Engineer" OR "Инженер безопасности"'
+    notes: "Крупная security-команда. Внутренний AppSec, инфраструктурная безопасность, Яндекс.Cloud Security."
+    enabled: true
+
+  - name: Сбер (СберКиберБезопасность)
+    careers_url: https://rabota.sber.ru/
+    scan_method: websearch
+    scan_query: '"Сбер" OR "Сбербанк" вакансии "DevSecOps" OR "Security" OR "Безопасность приложений" OR "AppSec"'
+    notes: "Сберкибер — крупнейшая security-команда в банкинге. DevSecOps, CloudSec, SAST/DAST, SOC."
+    enabled: true
+
+  - name: Тинькофф / Т-Банк
+    careers_url: https://www.tinkoff.ru/career/
+    scan_method: websearch
+    scan_query: 'site:tinkoff.ru/career "DevSecOps" OR "Application Security" OR "Security Engineer" OR "ИБ"'
+    notes: "Сильная security-команда. AppSec, инфраструктурная безопасность, bug bounty программа."
+    enabled: true
+
+  - name: VK
+    careers_url: https://vk.company/career/
+    scan_method: websearch
+    scan_query: '"VK" OR "ВКонтакте" вакансии "DevSecOps" OR "Security" OR "AppSec" OR "Безопасность"'
+    notes: "Большая security-команда. VK Cloud, mail.ru, Почта, инфраструктурная безопасность."
+    enabled: true
+
+  - name: Авито
+    careers_url: https://www.avito.ru/company/jobs
+    scan_method: websearch
+    scan_query: '"Авито" вакансии "DevSecOps" OR "Security Engineer" OR "Application Security"'
+    notes: "Растущая security-команда. DevSecOps, AppSec, Kubernetes security."
+    enabled: true
+
+  - name: Озон
+    careers_url: https://job.ozon.ru/
+    scan_method: websearch
+    scan_query: 'site:job.ozon.ru "DevSecOps" OR "Security" OR "Application Security" OR "ИБ"'
+    notes: "Один из крупнейших маркетплейсов. Активно строят DevSecOps-практику."
+    enabled: true
+
+  - name: Wildberries
+    careers_url: https://careerwb.ru/
+    scan_method: websearch
+    scan_query: '"Wildberries" вакансии "DevSecOps" OR "Security Engineer" OR "Application Security"'
+    notes: "Крупнейший маркетплейс. Строят security-инфраструктуру."
+    enabled: true
+
+  # ── Международные компании с офисами в РФ / удалёнка ─────────────
+
+  - name: JetBrains
+    careers_url: https://job-boards.greenhouse.io/jetbrains
+    api: https://boards-api.greenhouse.io/v1/boards/jetbrains/jobs
+    notes: "Прага/удалёнка. DevTools. Security в продуктах (AppSec для IDE/серверов)."
+    enabled: true
+
+  # ── Банки и финтех с сильными security-командами ─────────────────
+
+  - name: Альфа-Банк
+    careers_url: https://job.alfabank.ru/
+    scan_method: websearch
+    scan_query: '"Альфа-Банк" вакансии "DevSecOps" OR "Security" OR "AppSec" OR "Безопасность приложений"'
+    notes: "Крупная security-команда. Активная DevSecOps-трансформация."
+    enabled: true
+
+  - name: Газпромбанк Технологии
+    careers_url: https://career.gazprombank.ru/
+    scan_method: websearch
+    scan_query: '"Газпромбанк" вакансии "DevSecOps" OR "Security Engineer" OR "ИБ"'
+    notes: "Крупный банк с собственной tech-командой."
+    enabled: false  # включи если ищешь в банковском секторе
+
+  - name: СКБ Контур
+    careers_url: https://kontur.ru/career
+    scan_method: websearch
+    scan_query: '"Контур" OR "СКБ Контур" вакансии "DevSecOps" OR "Security" OR "AppSec"'
+    notes: "Екатеринбург/удалёнка. Сервисы для бизнеса. Security в продуктах."
+    enabled: false
+
+  - name: Selectel
+    careers_url: https://selectel.ru/en/jobs/
+    scan_method: websearch
+    scan_query: '"Selectel" вакансии "DevSecOps" OR "Security" OR "Cloud Security" OR "Kubernetes"'
+    notes: "Облачный провайдер. Security в облаке, Kubernetes, IaC."
+    enabled: true
