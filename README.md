@@ -2,6 +2,8 @@
 
 [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [한국어](README.ko-KR.md) | [日本語](README.ja.md) | [简体中文](README.cn.md) | [繁體中文](README.zh-TW.md) | [Українська](README.ua.md) | [Русский](README.ru.md)
 
+> **Fork of [santifer/career-ops](https://github.com/santifer/career-ops)** — a full-featured job search platform with a browser UI. Upload your CV, enter your target role, and get: match scoring (A–F), a tailored ATS-optimized PDF, interview preparation (STAR stories, behavioral questions, salary negotiation), and automated scanning of job boards. Russian market edition: hh.ru, Habr, GetMatch, Telegram. Run with `npm run web` → [http://localhost:3000](http://localhost:3000). Full guide in [README.ru.md](README.ru.md).
+
 <p align="center">
   <a href="https://x.com/santifer"><img src="docs/hero-banner.jpg" alt="Career-Ops Multi-Agent Job Search System" width="800"></a>
 </p>
