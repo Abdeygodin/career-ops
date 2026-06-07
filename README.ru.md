@@ -106,36 +106,41 @@ cp templates/portals.ru.example.yml portals.yml
 
 ## Быстрый старт (Windows)
 
-**Дважды кликни `start.bat`** — браузер откроется автоматически.
+### Способ 1 — скачать архив (для не-разработчиков)
 
-Или пошагово:
+1. Нажми **[⬇ Скачать ZIP](https://github.com/Abdeygodin/career-ops/archive/refs/heads/main.zip)**
+2. Распакуй в любую папку
+3. Дважды кликни `start.bat` — браузер откроется автоматически
+
+### Способ 2 — через git (для разработчиков)
 
 ```bash
-# 1. Клонируй
-git clone https://github.com/ТВО_ИМЯПОЛЬЗОВАТЕЛЯ/career-ops.git
+git clone https://github.com/Abdeygodin/career-ops.git
 cd career-ops
+```
 
-# 2. Установи зависимости
+Дальше дважды кликни `start.bat` — он сам установит зависимости и откроет браузер.
+
+<details>
+<summary>Ручная установка (если start.bat не подходит)</summary>
+
+```bash
+# Установи зависимости
 npm install
 npx playwright install chromium
 
-# 3. Настрой профиль
+# Настрой профиль (выбери под свою специализацию)
 cp config/profile.devsecops.ru.yml config/profile.yml
 # Открой config/profile.yml и заполни: full_name, email, phone
 
-# 4. Настрой порталы (российский рынок)
+# Настрой порталы (российский рынок)
 cp templates/portals.ru.example.yml portals.yml
-# Отредактируй title_filter.positive под свои роли
 
-# 5. Добавь CV
-# Создай cv.md или загрузи через веб-интерфейс (PDF/DOCX)
-
-# 6. Запусти
+# Запусти
 npm run web   # → http://localhost:3000
-
-# Или через Claude Code:
-claude   # /career-ops для меню всех команд
 ```
+
+</details>
 
 ### Для Ollama (опционально, нулевая стоимость)
 
