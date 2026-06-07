@@ -16,11 +16,11 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: Check Ollama
+:: Check Ollama (optional — OpenRouter / Claude API also work)
 where ollama >nul 2>&1
 if %errorlevel% neq 0 (
-    echo  ⚠️  Ollama не найдена — оценка и подготовка к интервью работать не будут.
-    echo     Скачай: https://ollama.com
+    echo  ℹ️  Ollama не найдена. Это нормально если используешь OpenRouter или Claude API.
+    echo     Настрой провайдера в приложении: Настройки -^> ИИ
     echo.
 )
 
