@@ -722,6 +722,33 @@ app.get('/api/followups', (req, res) => {
   child.on('error', e => res.status(500).json({ error: e.message }));
 });
 
+// ── GET /api/analytics ───────────────────────────────────────────
+// Runs analyze-patterns.mjs and returns its JSON output. Cached 5 min.
+let _analyticsCache = null;
+let _analyticsCacheAt = 0;
+const ANALYTICS_TTL = 5 * 60_000;
+
+app.get('/api/analytics', (req, res) => {
+  const force = req.query.force === '1';
+  if (!force && _analyticsCache && Date.now() - _analyticsCacheAt < ANALYTICS_TTL) {
+    return res.json(_analyticsCache);
+  }
+  let out = '';
+  const child = spawn('node', ['analyze-patterns.mjs', '--min-threshold', '1'], { cwd: ROOT });
+  child.stdout.on('data', d => { out += d; });
+  child.on('close', () => {
+    try {
+      const parsed = JSON.parse(out);
+      _analyticsCache = parsed;
+      _analyticsCacheAt = Date.now();
+      res.json(parsed);
+    } catch {
+      res.status(500).json({ error: 'analyze-patterns parse error', raw: out.slice(0, 300) });
+    }
+  });
+  child.on('error', e => res.status(500).json({ error: e.message }));
+});
+
 // ── GET /api/liveness?url=... ─────────────────────────────────────
 // Checks if a job posting URL is still active. Cached 5 min per URL.
 const _livenessCache = new Map();

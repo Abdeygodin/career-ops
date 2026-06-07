@@ -33,6 +33,7 @@
         <button id="btn-eval-all" class="btn btn-ghost hidden" title="Оценить все вакансии в очереди с ИИ">
           ⚡ Оценить все <span id="eval-all-badge" class="queue-badge">0</span>
         </button>
+        <button id="btn-analytics" class="btn btn-ghost" title="Аналитика откликов">📈 Аналитика</button>
         <button id="btn-export-csv" class="btn btn-ghost" title="Экспорт в CSV">📊 CSV</button>
         <button id="btn-settings" class="btn btn-ghost">⚙ Настройки</button>
       </div>
@@ -173,6 +174,19 @@
     </div><!-- /.layout -->
 
   </div><!-- /#app -->
+
+  <!-- Analytics modal -->
+  <div id="modal-analytics" class="modal hidden">
+    <div class="modal-box modal-box-lg">
+      <div class="modal-header">
+        <h3>📈 Аналитика откликов</h3>
+        <button class="modal-close" data-modal="analytics">✕</button>
+      </div>
+      <div id="analytics-body" class="an-body">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Follow-up modal -->
   <div id="modal-followup" class="modal hidden">

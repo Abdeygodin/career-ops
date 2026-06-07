@@ -162,6 +162,150 @@ function renderFollowupModal() {
   }).join('');
 }
 
+// ── Analytics ─────────────────────────────────────────────────
+let _analyticsData = null;
+
+async function openAnalyticsModal() {
+  openModal('analytics');
+  const body = qs('#analytics-body');
+  if (!_analyticsData) {
+    body.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+    try {
+      _analyticsData = await api('/api/analytics');
+    } catch (e) {
+      body.innerHTML = `<div class="an-empty">Ошибка загрузки: ${esc(e.message)}</div>`;
+      return;
+    }
+  }
+  renderAnalyticsModal(_analyticsData);
+}
+
+const IMPACT_COLOR = { high: 'var(--green)', medium: 'var(--orange)', low: 'var(--text-2)' };
+const IMPACT_RU    = { high: 'Высокий', medium: 'Средний', low: 'Низкий' };
+
+function barW(val, max) {
+  return max > 0 ? Math.round((val / max) * 100) : 0;
+}
+
+function renderAnalyticsModal(data) {
+  const body = qs('#analytics-body');
+  if (!body) return;
+
+  if (data?.error) {
+    body.innerHTML = `<div class="an-empty">📊 Недостаточно данных.<br><span class="hint">${esc(data.error)}</span><br><span class="hint" style="margin-top:8px;display:block">Добавь отклики со статусом Applied / Responded / Interview и попробуй снова.</span></div>`;
+    return;
+  }
+
+  const { metadata, funnel, scoreComparison, blockerAnalysis, recommendations, scoreThreshold } = data;
+
+  // ── Metadata summary ──
+  const total   = metadata?.total ?? '?';
+  const drRange = metadata?.dateRange
+    ? `${metadata.dateRange.earliest ?? ''} – ${metadata.dateRange.latest ?? ''}`.trim()
+    : '';
+  const byOut   = metadata?.byOutcome ?? {};
+
+  // ── Funnel ──
+  const funnelSteps = [
+    { key: 'evaluated', label: 'Оценено' },
+    { key: 'applied',   label: 'Откликнулся' },
+    { key: 'responded', label: 'Ответили' },
+    { key: 'interview', label: 'Интервью' },
+    { key: 'offer',     label: 'Офер' },
+  ];
+  const funnelMax = Math.max(...funnelSteps.map(s => funnel?.[s.key] ?? 0), 1);
+
+  const funnelHtml = funnelSteps.map(s => {
+    const v = funnel?.[s.key] ?? 0;
+    const w = barW(v, funnelMax);
+    return `
+      <div class="an-bar-row">
+        <span class="an-bar-label">${s.label}</span>
+        <div class="an-bar-track"><div class="an-bar-fill" style="width:${w}%"></div></div>
+        <span class="an-bar-val">${v}</span>
+      </div>`;
+  }).join('');
+
+  // ── Score comparison ──
+  const SC_KEYS   = ['positive', 'negative', 'pending'];
+  const SC_LABELS = { positive: 'Позитив', negative: 'Отказ', pending: 'В процессе' };
+  const SC_COLORS = { positive: 'var(--green)', negative: 'var(--red)', pending: 'var(--blue)' };
+
+  const scoreCards = SC_KEYS
+    .map(k => {
+      const s = scoreComparison?.[k];
+      if (!s?.count) return '';
+      return `
+        <div class="an-score-card">
+          <span class="an-score-num" style="color:${SC_COLORS[k]}">${(+s.avg).toFixed(1)}</span>
+          <span class="an-score-label">${SC_LABELS[k]}</span>
+          <span class="an-score-sub">${s.count} откл.</span>
+        </div>`;
+    }).join('');
+
+  // ── Blockers ──
+  const topBlockers = (blockerAnalysis ?? []).slice(0, 5);
+  const maxBFreq    = Math.max(...topBlockers.map(b => b.frequency), 1);
+  const blockersHtml = topBlockers.length
+    ? topBlockers.map(b => `
+        <div class="an-bar-row">
+          <span class="an-bar-label">${esc(b.blocker)}</span>
+          <div class="an-bar-track"><div class="an-bar-fill an-bar-fill-red" style="width:${barW(b.frequency, maxBFreq)}%"></div></div>
+          <span class="an-bar-val">${b.frequency}×</span>
+        </div>`).join('')
+    : '<span class="hint">Нет данных о блокерах</span>';
+
+  // ── Recommendations ──
+  const recs = (recommendations ?? []).slice(0, 4);
+  const recsHtml = recs.length
+    ? recs.map(r => `
+        <div class="an-rec-row">
+          <div class="an-rec-impact" style="background:${IMPACT_COLOR[r.impact] ?? 'var(--text-3)'}20;color:${IMPACT_COLOR[r.impact] ?? 'var(--text-2)'}">${IMPACT_RU[r.impact] ?? r.impact}</div>
+          <div class="an-rec-content">
+            <div class="an-rec-action">${esc(r.action)}</div>
+            <div class="an-rec-reason hint">${esc(r.reasoning)}</div>
+          </div>
+        </div>`).join('')
+    : '<span class="hint">Недостаточно данных для рекомендаций</span>';
+
+  // ── Score threshold hint ──
+  const threshHtml = scoreThreshold?.recommended
+    ? `<div class="an-threshold">Рекомендуемый порог оценки: <strong>${scoreThreshold.recommended}/5</strong> — ${esc(scoreThreshold.reasoning ?? '')}</div>`
+    : '';
+
+  body.innerHTML = `
+    <div class="an-meta">
+      <span>Всего откликов: <strong>${total}</strong></span>
+      ${drRange ? `<span class="hint">· ${drRange}</span>` : ''}
+      ${byOut.positive ? `<span class="an-meta-chip an-chip-green">✅ ${byOut.positive} позитив</span>` : ''}
+      ${byOut.negative ? `<span class="an-meta-chip an-chip-red">❌ ${byOut.negative} отказ</span>` : ''}
+    </div>
+
+    <div class="an-grid">
+      <div class="an-section">
+        <div class="an-section-title">Воронка</div>
+        ${funnelHtml}
+      </div>
+
+      <div class="an-section">
+        <div class="an-section-title">Средний балл по исходу</div>
+        <div class="an-score-cards">${scoreCards || '<span class="hint">Нет данных</span>'}</div>
+        ${threshHtml}
+      </div>
+    </div>
+
+    <div class="an-section" style="margin-top:12px">
+      <div class="an-section-title">Топ блокеры</div>
+      ${blockersHtml}
+    </div>
+
+    <div class="an-section" style="margin-top:12px">
+      <div class="an-section-title">Рекомендации</div>
+      ${recsHtml}
+    </div>
+  `;
+}
+
 async function loadVacancies() {
   state.loading = true;
   renderList();
@@ -681,6 +825,7 @@ function setupListeners() {
 
   // CSV export
   qs('#btn-export-csv').addEventListener('click', exportCSV);
+  qs('#btn-analytics').addEventListener('click', openAnalyticsModal);
   qs('#btn-followup').addEventListener('click', openFollowupModal);
 
   // Settings modal
