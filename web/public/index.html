@@ -72,6 +72,10 @@
         <span class="stat-num purple" id="s-interview">—</span>
         <span class="stat-label">Собеседование</span>
       </div>
+      <div class="stat-card stat-card-followup" id="btn-followup" title="Follow-up напоминания">
+        <span class="stat-num" id="s-followup">—</span>
+        <span class="stat-label">Follow-up <span id="s-followup-badge" class="fu-badge hidden">!</span></span>
+      </div>
     </div>
 
     <!-- Main layout -->
@@ -169,6 +173,18 @@
     </div><!-- /.layout -->
 
   </div><!-- /#app -->
+
+  <!-- Follow-up modal -->
+  <div id="modal-followup" class="modal hidden">
+    <div class="modal-box modal-box-lg">
+      <div class="modal-header">
+        <h3>🔔 Follow-up напоминания</h3>
+        <button class="modal-close" data-modal="followup">✕</button>
+      </div>
+      <div id="followup-summary" class="fu-summary"></div>
+      <div id="followup-list" class="fu-list"></div>
+    </div>
+  </div>
 
   <!-- Scan modal -->
   <div id="modal-scan" class="modal hidden">

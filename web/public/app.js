@@ -30,7 +30,8 @@ async function init() {
   await Promise.all([loadVacancies(), loadStats()]);
   setupListeners();
   focusSearch();
-  checkLlmStatus();  // non-blocking, runs after UI is ready
+  checkLlmStatus();   // non-blocking
+  loadFollowups();    // non-blocking
 }
 
 async function checkLlmStatus() {
@@ -43,6 +44,102 @@ async function checkLlmStatus() {
       banner.classList.remove('hidden');
     }
   } catch {}
+}
+
+// ── Follow-up ─────────────────────────────────────────────────
+let _followupData = null;
+
+async function loadFollowups() {
+  try {
+    _followupData = await api('/api/followups');
+    renderFollowupBadge();
+  } catch {}
+}
+
+function renderFollowupBadge() {
+  if (!_followupData?.metadata) return;
+  const { overdue, urgent, waiting, cold } = _followupData.metadata;
+  const actionable = _followupData.entries?.length ?? 0;
+  const numEl   = qs('#s-followup');
+  const badgeEl = qs('#s-followup-badge');
+  if (!numEl) return;
+  numEl.textContent = actionable || '—';
+  const hot = (overdue || 0) + (urgent || 0);
+  if (hot > 0) {
+    numEl.style.color = 'var(--red)';
+    badgeEl?.classList.remove('hidden');
+  } else if (waiting > 0) {
+    numEl.style.color = 'var(--orange)';
+  }
+}
+
+function openFollowupModal() {
+  if (!_followupData) {
+    api('/api/followups?force=1').then(d => { _followupData = d; renderFollowupModal(); }).catch(() => {});
+  } else {
+    renderFollowupModal();
+  }
+  openModal('followup');
+}
+
+const URGENCY_RU = { urgent: 'Срочно', overdue: 'Просрочено', waiting: 'Ждём', cold: 'Холодно' };
+const URGENCY_COLOR = { urgent: 'var(--red)', overdue: 'var(--orange)', waiting: 'var(--text-2)', cold: 'var(--text-3)' };
+const STATUS_FU_RU = { applied: 'Откликнулся', responded: 'Ответили', interview: 'Интервью' };
+
+function renderFollowupModal() {
+  const data = _followupData;
+  const sumEl  = qs('#followup-summary');
+  const listEl = qs('#followup-list');
+  if (!sumEl || !listEl) return;
+
+  if (!data || data.error) {
+    sumEl.innerHTML = '';
+    listEl.innerHTML = `<div class="fu-empty">Нет данных — добавь отклики в трекер.</div>`;
+    return;
+  }
+
+  const { metadata, entries } = data;
+  const chips = [
+    metadata.urgent   > 0 ? `<span class="fu-chip fu-chip-red">${metadata.urgent} срочно</span>`    : '',
+    metadata.overdue  > 0 ? `<span class="fu-chip fu-chip-orange">${metadata.overdue} просрочено</span>` : '',
+    metadata.waiting  > 0 ? `<span class="fu-chip fu-chip-muted">${metadata.waiting} ждут</span>`   : '',
+    metadata.cold     > 0 ? `<span class="fu-chip fu-chip-cold">${metadata.cold} холодно</span>`    : '',
+  ].filter(Boolean).join('');
+
+  sumEl.innerHTML = chips
+    ? `<div class="fu-chips">${chips}</div>`
+    : `<div class="fu-chips"><span class="fu-chip fu-chip-muted">Нет активных откликов</span></div>`;
+
+  if (!entries?.length) {
+    listEl.innerHTML = `<div class="fu-empty">Нет откликов для отслеживания.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = entries.map(e => {
+    const color  = URGENCY_COLOR[e.urgency] || 'var(--text-2)';
+    const label  = URGENCY_RU[e.urgency]    || e.urgency;
+    const stRu   = STATUS_FU_RU[e.status]   || e.status;
+    const next   = e.nextFollowupDate
+      ? (e.daysUntilNext < 0
+          ? `<span style="color:var(--red)">просрочено ${Math.abs(e.daysUntilNext)} д.</span>`
+          : e.daysUntilNext === 0
+            ? `<span style="color:var(--orange)">сегодня</span>`
+            : `через ${e.daysUntilNext} д.`)
+      : `<span style="color:var(--text-3)">—</span>`;
+    return `
+      <div class="fu-row">
+        <div class="fu-row-main">
+          <span class="fu-company">${esc(e.company)}</span>
+          <span class="fu-role">${esc(e.role)}</span>
+        </div>
+        <div class="fu-row-meta">
+          <span class="fu-status-badge">${stRu}</span>
+          <span class="fu-days">${e.daysSinceApplication} дн.</span>
+          <span class="fu-next">${next}</span>
+          <span class="fu-urgency" style="color:${color}">${label}</span>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 async function loadVacancies() {
@@ -563,6 +660,7 @@ function setupListeners() {
 
   // CSV export
   qs('#btn-export-csv').addEventListener('click', exportCSV);
+  qs('#btn-followup').addEventListener('click', openFollowupModal);
 
   // Settings modal
   qs('#btn-settings').addEventListener('click', () => { openModal('settings'); loadLlmSettings(); });

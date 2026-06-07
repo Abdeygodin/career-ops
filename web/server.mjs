@@ -693,6 +693,34 @@ app.get('/api/hh-areas', async (req, res) => {
   }
 });
 
+// ── GET /api/followups ───────────────────────────────────────────
+// Runs followup-cadence.mjs and returns its JSON output.
+// Cached for 60 s so rapid refreshes don't re-spawn.
+let _followupsCache = null;
+let _followupsCacheAt = 0;
+const FOLLOWUPS_TTL = 60_000;
+
+app.get('/api/followups', (req, res) => {
+  const force = req.query.force === '1';
+  if (!force && _followupsCache && Date.now() - _followupsCacheAt < FOLLOWUPS_TTL) {
+    return res.json(_followupsCache);
+  }
+  let out = '';
+  const child = spawn('node', ['followup-cadence.mjs'], { cwd: ROOT });
+  child.stdout.on('data', d => { out += d; });
+  child.on('close', () => {
+    try {
+      const parsed = JSON.parse(out);
+      _followupsCache = parsed;
+      _followupsCacheAt = Date.now();
+      res.json(parsed);
+    } catch {
+      res.status(500).json({ error: 'followup-cadence parse error', raw: out.slice(0, 300) });
+    }
+  });
+  child.on('error', e => res.status(500).json({ error: e.message }));
+});
+
 // ── GET /api/search-config ────────────────────────────────────────
 // Returns current keyword config from portals.yml
 app.get('/api/search-config', (req, res) => {

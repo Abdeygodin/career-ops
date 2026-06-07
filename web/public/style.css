@@ -1684,3 +1684,73 @@ textarea { resize: vertical; width: 100%; }
   flex-shrink: 0;
 }
 .llm-warning-dismiss:hover { color: var(--text-1); }
+
+/* ── Follow-up stat card ─────────────────────────────────────── */
+.stat-card-followup { cursor: pointer; }
+.fu-badge {
+  display: inline-block;
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: fu-pulse 1.8s ease-in-out infinite;
+}
+@keyframes fu-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+
+/* ── Follow-up modal ─────────────────────────────────────────── */
+.fu-summary { padding: 12px 20px 0; }
+.fu-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.fu-chip {
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.fu-chip-red    { background: rgba(255,68,68,.15);  color: var(--red); }
+.fu-chip-orange { background: rgba(255,140,0,.15);  color: var(--orange); }
+.fu-chip-muted  { background: rgba(138,122,96,.1);  color: var(--text-2); }
+.fu-chip-cold   { background: rgba(74,63,46,.15);   color: var(--text-3); }
+
+.fu-list { padding: 12px 20px 8px; display: flex; flex-direction: column; gap: 4px; max-height: 60vh; overflow-y: auto; }
+
+.fu-empty { color: var(--text-3); font-size: 13px; padding: 20px 0; text-align: center; }
+
+.fu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-light);
+  transition: background .15s;
+}
+.fu-row:hover { background: var(--bg-hover); }
+.fu-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fu-company { font-weight: 600; font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fu-role    { font-size: 11px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fu-row-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-size: 11px; }
+.fu-status-badge {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(138,122,96,.12);
+  color: var(--text-2);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.fu-days    { color: var(--text-3); }
+.fu-next    { min-width: 80px; text-align: right; }
+.fu-urgency { font-weight: 600; min-width: 72px; text-align: right; }
