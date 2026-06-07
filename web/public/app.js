@@ -46,6 +46,26 @@ async function checkLlmStatus() {
   } catch {}
 }
 
+// ── Liveness check ────────────────────────────────────────────
+async function checkLiveness(btn) {
+  const url = btn.dataset.url;
+  if (!url) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Проверяю…';
+  try {
+    const d = await api(`/api/liveness?url=${encodeURIComponent(url)}`);
+    const icons  = { active: '✅', expired: '❌', uncertain: '⚠️' };
+    const labels = { active: 'Активна', expired: 'Закрыта', uncertain: 'Неизвестно' };
+    btn.textContent = `${icons[d.result] || '⚠️'} ${labels[d.result] || d.result}`;
+    btn.title = d.reason || '';
+    btn.classList.toggle('liveness-active',   d.result === 'active');
+    btn.classList.toggle('liveness-expired',  d.result === 'expired');
+    btn.classList.toggle('liveness-uncertain', d.result === 'uncertain');
+  } catch {
+    btn.textContent = '⚠️ Ошибка';
+  }
+}
+
 // ── Follow-up ─────────────────────────────────────────────────
 let _followupData = null;
 
@@ -461,6 +481,7 @@ function renderDetail() {
           <button class="btn btn-sm btn-primary" id="btn-eval-vacancy">⚡ Оценить с ИИ</button>
         `}
         ${v.url ? `<button class="btn btn-sm btn-ghost" onclick="openUrl('${v.url}')">↗ Открыть</button>` : ''}
+        ${v.url ? `<button class="btn btn-sm btn-ghost liveness-btn" id="btn-liveness" data-url="${esc(v.url)}" onclick="checkLiveness(this)">🔎 Актуальна?</button>` : ''}
       </div>
     </div>
 

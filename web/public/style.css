@@ -1685,6 +1685,12 @@ textarea { resize: vertical; width: 100%; }
 }
 .llm-warning-dismiss:hover { color: var(--text-1); }
 
+/* ── Liveness button ─────────────────────────────────────────── */
+.liveness-btn { transition: color .2s, border-color .2s; }
+.liveness-active   { color: var(--green)  !important; border-color: rgba(0,204,68,.3)  !important; }
+.liveness-expired  { color: var(--red)    !important; border-color: rgba(255,68,68,.3) !important; }
+.liveness-uncertain{ color: var(--orange) !important; border-color: rgba(255,140,0,.3) !important; }
+
 /* ── Follow-up stat card ─────────────────────────────────────── */
 .stat-card-followup { cursor: pointer; }
 .fu-badge {

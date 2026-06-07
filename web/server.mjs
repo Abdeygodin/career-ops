@@ -14,6 +14,7 @@ const require = createRequire(import.meta.url);
 const multer  = require('multer');
 
 import { parseTracker, enrichFromReports, normalizeStatus, STATUS_RU } from './lib/parse-tracker.mjs';
+import { checkUrlLiveness } from '../liveness-browser.mjs';
 import { parsePipeline } from './lib/parse-pipeline.mjs';
 import { loadReportFull, mdToHtml, parseSummaryBlock } from './lib/parse-reports.mjs';
 import { extractTextFromBuffer } from './lib/parse-cv.mjs';
@@ -719,6 +720,36 @@ app.get('/api/followups', (req, res) => {
     }
   });
   child.on('error', e => res.status(500).json({ error: e.message }));
+});
+
+// ── GET /api/liveness?url=... ─────────────────────────────────────
+// Checks if a job posting URL is still active. Cached 5 min per URL.
+const _livenessCache = new Map();
+const LIVENESS_TTL = 5 * 60_000;
+
+app.get('/api/liveness', async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).json({ error: 'url required' });
+
+  const cached = _livenessCache.get(url);
+  if (cached && Date.now() - cached.checkedAt < LIVENESS_TTL) {
+    return res.json(cached);
+  }
+
+  let browser, page;
+  try {
+    browser = await chromium.launch({ headless: true });
+    page    = await browser.newPage();
+    const { result, reason } = await checkUrlLiveness(page, url);
+    const data = { result, reason, checkedAt: Date.now() };
+    _livenessCache.set(url, data);
+    res.json(data);
+  } catch (e) {
+    res.json({ result: 'uncertain', reason: e.message });
+  } finally {
+    await page?.close().catch(() => {});
+    await browser?.close().catch(() => {});
+  }
 });
 
 // ── GET /api/search-config ────────────────────────────────────────
