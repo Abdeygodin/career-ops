@@ -258,17 +258,15 @@
 
         <!-- Region + format -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <label>
+          <div>
             <span class="scan-section-title" style="display:block;margin-bottom:4px">Регион</span>
-            <select id="scan-area">
-              <option value="88">Вся Россия</option>
-              <option value="1,2" selected>Москва + СПб</option>
-              <option value="1">Только Москва</option>
-              <option value="2">Только СПб</option>
-              <option value="1,2,24">МСК + СПб + Волгоград</option>
-              <option value="24">Только Волгоград</option>
-            </select>
-          </label>
+            <div class="area-select-wrap">
+              <input id="scan-area-search" type="search" class="area-search-input" placeholder="🔍 Поиск…" autocomplete="off">
+              <select id="scan-area" class="area-select">
+                <option value="88" selected>🇷🇺 Вся Россия</option>
+              </select>
+            </div>
+          </div>
           <label>
             <span class="scan-section-title" style="display:block;margin-bottom:4px">Формат работы</span>
             <select id="scan-schedule">

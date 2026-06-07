@@ -656,6 +656,43 @@ ${profileText ? `\nПрофиль кандидата (для контекста)
   }
 });
 
+// ── GET /api/hh-areas ────────────────────────────────────────────
+// Returns flat sorted list of hh.ru Russian regions/cities.
+// Fetched from hh.ru public API, cached for 1 hour.
+let _hhAreasCache = null;
+let _hhAreasCacheAt = 0;
+const HH_AREAS_TTL = 3_600_000;
+
+app.get('/api/hh-areas', async (req, res) => {
+  if (_hhAreasCache && Date.now() - _hhAreasCacheAt < HH_AREAS_TTL) {
+    return res.json(_hhAreasCache);
+  }
+  try {
+    const r = await fetch('https://api.hh.ru/areas/113', {
+      headers: { 'User-Agent': 'career-ops/1.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) throw new Error(`hh.ru areas HTTP ${r.status}`);
+    const root = await r.json();
+    // root.areas is directly the list of Russian regions (oblasts/krais/republics).
+    // Children of each region are individual cities — too granular, we skip them.
+    const flat = (root.areas || []).map(a => ({ id: a.id, name: a.name }));
+    flat.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    _hhAreasCache = flat;
+    _hhAreasCacheAt = Date.now();
+    res.json(flat);
+  } catch (e) {
+    // Return static fallback so UI stays functional offline
+    res.json([
+      { id: '1',  name: 'Москва' },
+      { id: '2',  name: 'Санкт-Петербург' },
+      { id: '3',  name: 'Екатеринбург' },
+      { id: '4',  name: 'Новосибирск' },
+      { id: '88', name: 'Вся Россия' },
+    ]);
+  }
+});
+
 // ── GET /api/search-config ────────────────────────────────────────
 // Returns current keyword config from portals.yml
 app.get('/api/search-config', (req, res) => {

@@ -1003,6 +1003,42 @@ textarea { resize: vertical; width: 100%; }
   color: var(--text-2);
 }
 
+/* ── Region selector ─────────────────────────────────────────── */
+.area-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.area-search-input {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 13px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  outline: none;
+  box-sizing: border-box;
+}
+.area-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.area-select {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 13px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  cursor: pointer;
+}
+.area-select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
 /* ── Tags input (keyword editor) ─────────────────────────────── */
 .tag-input-wrap {
   display: flex;

@@ -761,6 +761,23 @@ function setupListeners() {
   setupTagInput('positive');
   setupTagInput('negative');
 
+  // Region search filter
+  qs('#scan-area-search')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase().trim();
+    const sel = qs('#scan-area');
+    if (!sel) return;
+    let firstVisible = null;
+    for (const opt of sel.options) {
+      const match = !q || opt.textContent.toLowerCase().includes(q);
+      opt.hidden = !match;
+      if (match && !firstVisible) firstVisible = opt;
+    }
+    // If selected option got hidden, switch to first visible
+    if (sel.selectedOptions[0]?.hidden && firstVisible) {
+      sel.value = firstVisible.value;
+    }
+  });
+
   // Evaluate run
   qs('#btn-eval-run').addEventListener('click', runEvaluate);
 
@@ -1057,6 +1074,8 @@ async function openScanModal() {
   openModal('scan');
   // Focus role input if no keywords yet
   if (scanConfig.positive.length === 0) setTimeout(() => qs('#suggest-role-input')?.focus(), 60);
+  // Load hh.ru regions (lazy, cached after first load)
+  loadHhAreas();
 }
 
 // ── Tag management ────────────────────────────────────────────
@@ -1101,6 +1120,27 @@ function setupTagInput(type) {
   qs(`#${type}-tags-wrap`)?.addEventListener('click', e => {
     if (!e.target.closest('.tag')) input.focus();
   });
+}
+
+// ── HH Areas loader ───────────────────────────────────────────
+let _hhAreas = null;
+
+async function loadHhAreas() {
+  if (_hhAreas !== null) return;
+  try {
+    const areas = await api('/api/hh-areas');
+    _hhAreas = areas;
+    const sel = qs('#scan-area');
+    if (!sel) return;
+    for (const a of areas) {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.name;
+      sel.appendChild(opt);
+    }
+  } catch {
+    _hhAreas = [];
+  }
 }
 
 // ── Scan runner ───────────────────────────────────────────────
