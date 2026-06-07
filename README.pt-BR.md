@@ -52,6 +52,7 @@
 </p>
 
 ## O que é isso
+<img width="2555" height="1099" alt="Career-Ops Web UI" src="https://github.com/user-attachments/assets/5422859a-2fe5-440e-a121-f23051d05774" />
 
 Career-Ops transforma qualquer CLI de código com IA em uma central completa de busca de emprego. Em vez de acompanhar candidaturas manualmente em planilha, você tem um pipeline com IA que:
 

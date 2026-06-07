@@ -52,6 +52,7 @@
 </p>
 
 ## 这是什么
+<img width="2555" height="1099" alt="Career-Ops Web UI" src="https://github.com/user-attachments/assets/5422859a-2fe5-440e-a121-f23051d05774" />
 
 Career-Ops 可以把任何 AI 编码 CLI 变成完整的求职指挥中心。你不需要再手动用电子表格追踪申请流程，而是获得一个 AI 驱动的管道，能够：
 

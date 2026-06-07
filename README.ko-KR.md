@@ -52,6 +52,7 @@
 </p>
 
 ## 이게 뭔가요
+<img width="2555" height="1099" alt="Career-Ops Web UI" src="https://github.com/user-attachments/assets/5422859a-2fe5-440e-a121-f23051d05774" />
 
 Career-Ops는 AI 코딩 CLI를 취업 활동 전체를 관리하는 커맨드 센터로 바꿔줍니다. 스프레드시트에서 수동으로 지원 현황을 관리하는 대신, AI 파이프라인이 알아서 처리합니다:
 

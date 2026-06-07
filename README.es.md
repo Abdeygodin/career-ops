@@ -52,6 +52,7 @@
 </p>
 
 ## Que es esto
+<img width="2555" height="1099" alt="Career-Ops Web UI" src="https://github.com/user-attachments/assets/5422859a-2fe5-440e-a121-f23051d05774" />
 
 Career-Ops convierte cualquier CLI de IA en un centro de mando de busqueda de empleo. En vez de trackear aplicaciones en un spreadsheet, tienes un pipeline AI que:
 

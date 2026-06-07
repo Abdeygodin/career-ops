@@ -52,6 +52,7 @@
 </p>
 
 ## Що це таке
+<img width="2555" height="1099" alt="Career-Ops Web UI" src="https://github.com/user-attachments/assets/5422859a-2fe5-440e-a121-f23051d05774" />
 
 Career-Ops перетворює будь-який AI-кодинг CLI на повноцінний командний центр для пошуку роботи. Замість ручного відстеження заявок у таблиці, ви отримуєте AI-pipeline, який:
 
