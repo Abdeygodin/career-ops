@@ -171,7 +171,10 @@ async function openAnalyticsModal() {
   if (!_analyticsData) {
     body.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
     try {
-      _analyticsData = await api('/api/analytics');
+      const d = await api('/api/analytics');
+      if (!d.error) _analyticsData = d;
+      renderAnalyticsModal(d);
+      return;
     } catch (e) {
       body.innerHTML = `<div class="an-empty">Ошибка загрузки: ${esc(e.message)}</div>`;
       return;
@@ -260,7 +263,7 @@ function renderAnalyticsModal(data) {
   const recsHtml = recs.length
     ? recs.map(r => `
         <div class="an-rec-row">
-          <div class="an-rec-impact" style="background:${IMPACT_COLOR[r.impact] ?? 'var(--text-3)'}20;color:${IMPACT_COLOR[r.impact] ?? 'var(--text-2)'}">${IMPACT_RU[r.impact] ?? r.impact}</div>
+          <div class="an-rec-impact an-impact-${r.impact || 'low'}">${IMPACT_RU[r.impact] ?? r.impact}</div>
           <div class="an-rec-content">
             <div class="an-rec-action">${esc(r.action)}</div>
             <div class="an-rec-reason hint">${esc(r.reasoning)}</div>

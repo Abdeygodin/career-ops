@@ -739,8 +739,10 @@ app.get('/api/analytics', (req, res) => {
   child.on('close', () => {
     try {
       const parsed = JSON.parse(out);
-      _analyticsCache = parsed;
-      _analyticsCacheAt = Date.now();
+      if (!parsed.error) {
+        _analyticsCache = parsed;
+        _analyticsCacheAt = Date.now();
+      }
       res.json(parsed);
     } catch {
       res.status(500).json({ error: 'analyze-patterns parse error', raw: out.slice(0, 300) });
