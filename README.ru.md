@@ -26,6 +26,21 @@
 
 ---
 
+## Выбери свой профиль
+
+Скопируй нужный профиль в `config/profile.yml` и заполни имя, email и телефон:
+
+| Специализация | Команда | Зарплата (ориентир) |
+|---------------|---------|---------------------|
+| **DevSecOps / AppSec** | `cp config/profile.devsecops.ru.yml config/profile.yml` | 300–450 тыс. ₽ |
+| **Backend** (Python / Java / Go) | `cp config/profile.backend.ru.yml config/profile.yml` | 200–350 тыс. ₽ |
+| **Frontend** (React / Vue) | `cp config/profile.frontend.ru.yml config/profile.yml` | 170–300 тыс. ₽ |
+| **Product Manager / PO** | `cp config/profile.manager.ru.yml config/profile.yml` | 200–400 тыс. ₽ |
+
+Нужна другая специализация? Скажи Claude: *«настрой профиль под [роль]»* — он отредактирует файл за тебя.
+
+---
+
 ## Что добавлено в этом форке (относительно оригинала)
 
 ### Веб-интерфейс (`web/`)

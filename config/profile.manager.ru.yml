@@ -1,0 +1,93 @@
+# Product / Project Manager Profile — Russian Market
+# ─────────────────────────────────────────────────────────────────
+# Ready-to-use profile for a Product Manager / Project Manager / PO
+# targeting the Russian IT market (hh.ru, Хабр Карьера, Telegram).
+#
+# HOW TO USE:
+#   cp config/profile.manager.ru.yml config/profile.yml
+#   Then fill in YOUR personal details in the candidate section.
+#   To switch specialization — copy a different profile.*.yml over profile.yml.
+#   No code changes needed.
+# ─────────────────────────────────────────────────────────────────
+
+candidate:
+  full_name: "Иван Иванов"
+  email: "ivan@example.com"
+  phone: "+7-900-000-0000"
+  location: "Москва / удалённо"
+  linkedin: ""
+  portfolio_url: ""
+  github: ""
+  twitter: ""
+
+target_roles:
+  primary:
+    - "Product Manager"
+    - "Product Owner"
+    - "Менеджер продукта"
+  archetypes:
+    - name: "Product Manager (B2B / B2C)"
+      level: "Middle/Senior"
+      fit: "primary"
+    - name: "Product Owner"
+      level: "Middle/Senior"
+      fit: "primary"
+    - name: "Head of Product"
+      level: "Lead/Director"
+      fit: "secondary"
+    - name: "Project Manager / Delivery Manager"
+      level: "Middle/Senior"
+      fit: "adjacent"
+    - name: "Business Analyst"
+      level: "Middle/Senior"
+      fit: "adjacent"
+
+narrative:
+  headline: "Продуктовый менеджер — нахожу точки роста и довожу продукт до результата"
+  exit_story: ""
+  superpowers:
+    - "Продуктовые метрики: DAU/MAU, retention, LTV — принимаю решения на данных"
+    - "Управление бэклогом и приоритизация: RICE, Jobs-to-be-Done, customer discovery"
+    - "Работа с командой: синхрон разработки, дизайна и бизнеса без потерь"
+  proof_points: []
+
+compensation:
+  target_range: "200 000 — 400 000 ₽ gross"
+  currency: "RUB"
+  minimum: "170 000 ₽ gross"
+  location_flexibility: "Удалённо предпочтительно; офис/гибрид — Москва"
+
+location:
+  country: "Россия"
+  city: "Москва"
+  timezone: "MSK (UTC+3)"
+  visa_status: "Гражданин РФ"
+
+language:
+  modes_dir: modes/ru
+
+# ─────────────────────────────────────────────────────────────────
+# Scoring weights for Product Manager specialization.
+# Sum = 1.0.
+#
+# domain_fit — совпадение продуктового домена (fintech, edtech,
+#   e-commerce, b2b-saas, marketplace и т.д.).
+# company_stage — стадия компании (стартап / growth / enterprise)
+#   и её соответствие опыту кандидата.
+# growth_opportunity — наличие горизонта роста (CPO, своя команда,
+#   новые продукты).
+# autonomy — самостоятельность PM в принятии решений (не исполнитель).
+# ─────────────────────────────────────────────────────────────────
+scoring_weights:
+  cv_match: 0.15              # соответствие опыта и навыков CV
+  north_star_fit: 0.15        # совпадение с целевыми архетипами
+  compensation: 0.15          # зарплата vs рынок
+  cultural_signals: 0.05      # культура, процессы, стабильность
+  red_flags: 0.05             # блокеры и предупреждения (негативно)
+  domain_fit: 0.20            # совпадение продуктового домена
+  company_stage: 0.10         # стадия компании vs опыт кандидата
+  growth_opportunity: 0.10    # горизонт роста внутри компании
+  autonomy: 0.05              # реальная самостоятельность PM
+
+cv:
+  output_format: "html"

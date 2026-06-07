@@ -1,0 +1,90 @@
+# Backend Developer Profile — Russian Market
+# ─────────────────────────────────────────────────────────────────
+# Ready-to-use profile for a Backend / Software Engineer
+# targeting the Russian IT market (hh.ru, Хабр Карьера, Telegram).
+#
+# HOW TO USE:
+#   cp config/profile.backend.ru.yml config/profile.yml
+#   Then fill in YOUR personal details in the candidate section.
+#   To switch specialization — copy a different profile.*.yml over profile.yml.
+#   No code changes needed.
+# ─────────────────────────────────────────────────────────────────
+
+candidate:
+  full_name: "Иван Иванов"
+  email: "ivan@example.com"
+  phone: "+7-900-000-0000"
+  location: "Москва / удалённо"
+  linkedin: ""
+  portfolio_url: ""
+  github: "github.com/ivanivanov"
+  twitter: ""
+
+target_roles:
+  primary:
+    - "Backend Developer"
+    - "Software Engineer"
+    - "Python Developer"       # замени на свой стек: Java / Go / Node.js / C#
+  archetypes:
+    - name: "Backend Developer (Python / Java / Go)"
+      level: "Middle/Senior"
+      fit: "primary"
+    - name: "Software Engineer"
+      level: "Middle/Senior"
+      fit: "primary"
+    - name: "Team Lead / Tech Lead"
+      level: "Lead"
+      fit: "secondary"
+    - name: "Full-Stack Engineer"
+      level: "Middle/Senior"
+      fit: "adjacent"
+    - name: "Platform / Infrastructure Engineer"
+      level: "Senior"
+      fit: "adjacent"
+
+narrative:
+  headline: "Backend-разработчик — строю надёжные высоконагруженные сервисы"
+  exit_story: ""
+  superpowers:
+    - "Проектирование и оптимизация высоконагруженных систем (RPS, latency)"
+    - "Чистая архитектура: микросервисы, очереди, кэш, gRPC/REST"
+    - "Культура кода: code review, тесты, CI/CD, нулевой технический долг"
+  proof_points: []
+
+compensation:
+  target_range: "200 000 — 350 000 ₽ gross"
+  currency: "RUB"
+  minimum: "160 000 ₽ gross"
+  location_flexibility: "Удалённо предпочтительно; офис/гибрид — Москва"
+
+location:
+  country: "Россия"
+  city: "Москва"
+  timezone: "MSK (UTC+3)"
+  visa_status: "Гражданин РФ"
+
+language:
+  modes_dir: modes/ru
+
+# ─────────────────────────────────────────────────────────────────
+# Scoring weights for Backend specialization.
+# Sum = 1.0.
+#
+# tech_stack_match — совпадение по языку и фреймворку (Python/Django,
+#   Java/Spring, Go, Node.js, C#/.NET, Kotlin).
+# system_design_fit — наличие задач по архитектуре, highload, очередям.
+# remote_friendly — наличие удалённого формата (критично для РФ-рынка).
+# team_culture — размер команды, процессы, code review.
+# ─────────────────────────────────────────────────────────────────
+scoring_weights:
+  cv_match: 0.20              # соответствие навыков и опыта CV
+  north_star_fit: 0.15        # совпадение с целевыми архетипами
+  compensation: 0.15          # зарплата vs рынок
+  cultural_signals: 0.05      # культура, рост, стабильность
+  red_flags: 0.05             # блокеры и предупреждения (негативно)
+  tech_stack_match: 0.20      # совпадение по языку и фреймворку
+  system_design_fit: 0.10     # задачи по архитектуре и highload
+  remote_friendly: 0.10       # удалённый формат работы
+
+cv:
+  output_format: "html"
