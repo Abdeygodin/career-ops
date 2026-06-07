@@ -869,6 +869,7 @@ function setupListeners() {
   // LLM settings: save + test
   qs('#btn-llm-save').addEventListener('click', saveLlmSettings);
   qs('#btn-llm-test').addEventListener('click', testLlmConnection);
+  qs('#btn-fetch-models').addEventListener('click', fetchModels);
 
   // CV button
   qs('#btn-cv').addEventListener('click', openCVModal);
@@ -2266,6 +2267,62 @@ async function testLlmConnection() {
     result.textContent = `❌ ${e.message}`;
   } finally {
     btn.disabled = false;
+  }
+}
+
+// ── Fetch models from provider ────────────────────────────────
+async function fetchModels() {
+  const btn      = qs('#btn-fetch-models');
+  const status   = qs('#fetch-models-status');
+  const provider = document.querySelector('.provider-tab.active')?.dataset.provider || 'ollama';
+
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  status.textContent = 'Запрашиваю список моделей…';
+  status.style.color = 'var(--text-2)';
+
+  try {
+    const d = await api('/api/llm-config/models', {
+      method: 'POST',
+      body: JSON.stringify({
+        provider,
+        api_key:     qs('#llm-api-key').value.trim(),
+        ollama_host: qs('#llm-ollama-host').value.trim(),
+        base_url:    qs('#llm-base-url').value.trim(),
+      }),
+    });
+
+    const models = d.models || [];
+
+    // Populate datalist for native autocomplete
+    const datalist = qs('#llm-model-datalist');
+    if (datalist) datalist.innerHTML = models.map(m => `<option value="${esc(m)}">`).join('');
+
+    // Replace chips with fetched models (cap at 15 to avoid overflow)
+    const chipsEl = qs('#llm-model-chips');
+    if (chipsEl) {
+      chipsEl.innerHTML = models.slice(0, 15).map(m =>
+        `<button class="model-chip" data-model="${esc(m)}">${esc(m)}</button>`
+      ).join('');
+      chipsEl.querySelectorAll('.model-chip').forEach(chip => {
+        chip.addEventListener('click', () => { qs('#llm-model').value = chip.dataset.model; });
+      });
+    }
+
+    if (models.length > 0) {
+      status.textContent = `✅ Найдено ${models.length} моделей — выбери или введи вручную`;
+      status.style.color = 'var(--green)';
+    } else {
+      const msg = d.error ? `❌ ${d.error}` : '⚠️ Список моделей пуст';
+      status.textContent = msg;
+      status.style.color = d.error ? 'var(--red)' : 'var(--orange)';
+    }
+  } catch (e) {
+    status.textContent = `❌ ${e.message}`;
+    status.style.color = 'var(--red)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Модели';
   }
 }
 

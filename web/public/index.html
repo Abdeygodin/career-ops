@@ -598,8 +598,16 @@
 
           <div class="manage-section">
             <div class="manage-section-title">Модель</div>
-            <input id="llm-model" type="text" class="settings-input" placeholder="qwen3:14b" style="margin-bottom:8px">
-            <div class="model-chips" id="llm-model-chips"></div>
+            <div class="model-input-row">
+              <input id="llm-model" type="text" class="settings-input" placeholder="qwen3:14b"
+                list="llm-model-datalist" autocomplete="off">
+              <datalist id="llm-model-datalist"></datalist>
+              <button id="btn-fetch-models" class="btn btn-ghost btn-sm" title="Запросить список моделей у провайдера">
+                🔄 Модели
+              </button>
+            </div>
+            <span id="fetch-models-status" class="hint" style="font-size:11px;margin-top:4px;display:block"></span>
+            <div class="model-chips" id="llm-model-chips" style="margin-top:6px"></div>
           </div>
 
           <div style="display:flex;align-items:center;gap:12px">

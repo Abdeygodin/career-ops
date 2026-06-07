@@ -900,6 +900,59 @@ app.post('/api/llm-config/test', async (req, res) => {
   res.json(result);
 });
 
+// ── POST /api/llm-config/models ──────────────────────────────────
+// Fetches available models from the provider. Uses form values (not saved config)
+// so the user can test before saving.
+app.post('/api/llm-config/models', async (req, res) => {
+  const { provider, api_key, ollama_host, base_url } = req.body;
+  try {
+    let models = [];
+
+    if (provider === 'ollama') {
+      const host = (ollama_host || 'http://localhost:11434').replace(/\/$/, '');
+      const r = await fetch(`${host}/api/tags`, { signal: AbortSignal.timeout(6000) });
+      if (r.ok) {
+        const data = await r.json();
+        models = (data.models || []).map(m => m.name).sort();
+      }
+    } else if (provider === 'anthropic') {
+      const r = await fetch('https://api.anthropic.com/v1/models?limit=100', {
+        headers: { 'x-api-key': api_key || '', 'anthropic-version': '2023-06-01' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        models = (data.data || []).map(m => m.id).sort();
+      } else {
+        return res.json({ models: [], error: `Anthropic ${r.status}` });
+      }
+    } else {
+      const baseUrl =
+        provider === 'openai'     ? 'https://api.openai.com/v1'
+      : provider === 'deepseek'   ? 'https://api.deepseek.com/v1'
+      : provider === 'openrouter' ? 'https://openrouter.ai/api/v1'
+      : (base_url || '').replace(/\/$/, '');
+
+      if (!baseUrl) return res.json({ models: [], error: 'Base URL не указан' });
+
+      const r = await fetch(`${baseUrl}/models`, {
+        headers: api_key ? { Authorization: `Bearer ${api_key}` } : {},
+        signal: AbortSignal.timeout(8000),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        models = (data.data || []).map(m => m.id).sort();
+      } else {
+        return res.json({ models: [], error: `HTTP ${r.status}` });
+      }
+    }
+
+    res.json({ models });
+  } catch (e) {
+    res.json({ models: [], error: e.message });
+  }
+});
+
 // ── GET /api/llm-status ───────────────────────────────────────────
 // Lightweight readiness check — no LLM tokens consumed.
 app.get('/api/llm-status', async (req, res) => {
