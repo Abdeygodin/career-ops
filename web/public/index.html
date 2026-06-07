@@ -568,6 +568,7 @@
               <button class="provider-tab active" data-provider="ollama">Ollama</button>
               <button class="provider-tab" data-provider="openai">OpenAI</button>
               <button class="provider-tab" data-provider="anthropic">Anthropic</button>
+              <button class="provider-tab" data-provider="deepseek">DeepSeek</button>
               <button class="provider-tab" data-provider="openrouter">OpenRouter</button>
               <button class="provider-tab" data-provider="custom">Свой URL</button>
             </div>
@@ -585,8 +586,14 @@
           </div>
 
           <div class="manage-section hidden" id="llm-row-base-url">
-            <div class="manage-section-title">Base URL <span class="hint">(только для Свой URL)</span></div>
+            <div class="manage-section-title">Base URL <span class="hint">(OpenAI-совместимый эндпоинт)</span></div>
             <input id="llm-base-url" type="text" class="settings-input" placeholder="https://api.example.com/v1">
+            <p class="hint" style="margin-top:6px;line-height:1.7">
+              Примеры совместимых API:<br>
+              GigaChat: <code style="font-size:11px">https://gigachat.devices.sberbank.ru/api/v1</code><br>
+              YandexGPT: <code style="font-size:11px">https://llm.api.cloud.yandex.net/foundationModels/v1</code><br>
+              Mistral: <code style="font-size:11px">https://api.mistral.ai/v1</code>
+            </p>
           </div>
 
           <div class="manage-section">

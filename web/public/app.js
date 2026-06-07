@@ -2160,6 +2160,7 @@ const PROVIDER_FIELD_VISIBILITY = {
   ollama:     { host: true,  key: false, url: false },
   openai:     { host: false, key: true,  url: false },
   anthropic:  { host: false, key: true,  url: false },
+  deepseek:   { host: false, key: true,  url: false },
   openrouter: { host: false, key: true,  url: false },
   custom:     { host: false, key: true,  url: true  },
 };

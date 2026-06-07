@@ -16,12 +16,14 @@ export const PROVIDER_MODELS = {
   ollama:     ['qwen3:14b', 'qwen3:8b', 'qwen2.5:14b', 'llama3.2:3b', 'mistral:7b'],
   openai:     ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo'],
   anthropic:  ['claude-haiku-4-5-20251001', 'claude-sonnet-4-6', 'claude-opus-4-8'],
+  deepseek:   ['deepseek-chat', 'deepseek-reasoner'],
   openrouter: [
     'google/gemini-flash-1.5',
     'google/gemini-2.5-flash',
     'anthropic/claude-3.5-sonnet',
     'meta-llama/llama-3.3-70b-instruct:free',
     'mistralai/mistral-7b-instruct:free',
+    'deepseek/deepseek-chat:free',
   ],
   custom: [],
 };
@@ -30,6 +32,7 @@ export const PROVIDER_LABELS = {
   ollama:     'Ollama (локальный)',
   openai:     'OpenAI',
   anthropic:  'Anthropic',
+  deepseek:   'DeepSeek',
   openrouter: 'OpenRouter',
   custom:     'Свой URL',
 };
@@ -69,6 +72,7 @@ function resolveBaseUrl(cfg) {
     case 'ollama':     return `${(cfg.ollama_host || 'http://localhost:11434').replace(/\/$/, '')}/v1`;
     case 'openai':     return 'https://api.openai.com/v1';
     case 'anthropic':  return 'https://api.anthropic.com';
+    case 'deepseek':   return 'https://api.deepseek.com/v1';
     case 'openrouter': return 'https://openrouter.ai/api/v1';
     case 'custom':     return (cfg.base_url || '').replace(/\/$/, '');
     default:           return 'http://localhost:11434/v1';

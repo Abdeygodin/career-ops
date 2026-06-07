@@ -882,7 +882,7 @@ app.get('/api/llm-config', (req, res) => {
 // ── PUT /api/llm-config ───────────────────────────────────────────
 app.put('/api/llm-config', (req, res) => {
   const { provider, model, ollama_host, api_key, base_url } = req.body;
-  const allowed = ['ollama', 'openai', 'anthropic', 'openrouter', 'custom'];
+  const allowed = ['ollama', 'openai', 'anthropic', 'deepseek', 'openrouter', 'custom'];
   if (!allowed.includes(provider)) return res.status(400).json({ error: 'invalid provider' });
   try {
     saveLlmConfig({ provider, model: model || '', ollama_host: ollama_host || '', api_key: api_key || '', base_url: base_url || '' });
